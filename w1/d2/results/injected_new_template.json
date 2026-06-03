@@ -1,0 +1,5 @@
+{
+  "change_type": "cluster_created",
+  "cluster_id": 109,
+  "template": "CRITICAL payment-service quantum cache exploded for tenant=abc retry_budget=-999 unusual_token=ZXCV_NOT_SEEN_BEFORE"
+}

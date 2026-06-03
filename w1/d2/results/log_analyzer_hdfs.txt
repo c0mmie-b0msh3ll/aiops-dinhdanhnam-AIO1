@@ -1,0 +1,18 @@
+Log file: data\HDFS_2k.log
+Total lines: 2000
+Unique templates: 17
+Detected dataset format: HDFS
+
+Top-5 templates:
+- T1 | 310 lines | 15.50% | PacketResponder <*> for block <*> terminating
+- T2 | 300 lines | 15.00% | BLOCK* NameSystem.addStoredBlock: blockMap updated: <*> is added to <*> size <*>
+- T4 | 291 lines | 14.55% | Receiving block <*> src: <*> dest: <*>
+- T3 | 280 lines | 14.00% | Received block <*> of size <*> from <*>
+- T7 | 262 lines | 13.10% | Deleting block <*> file <*>
+
+Template spikes in the last-hour style check (z >= 3.0):
+- T6 | window=2008-11-10 08:00:00 | count=3 | z=3.45 | Verification succeeded for <*>
+- T8 | window=2008-11-10 08:00:00 | count=13 | z=3.45 | <*> Served block <*> to <*>
+
+New templates first seen in the final hour:
+- No new templates in the final hour.

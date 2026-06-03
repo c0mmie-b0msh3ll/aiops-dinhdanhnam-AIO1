@@ -1,0 +1,6 @@
+service,lines,unique_templates,top_template_percent,top_template
+frontend,882,20,91.95,"172.19.0.1 - - <*> +0000] <*> <*> HTTP/1.1"" <*> <*> <*> ""Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"" ""-"""
+backend,478,5,97.7,"127.0.0.1 - <*> +0000 <*> /index.php"" <*>"
+llm,318,25,74.84,"INFO: <*> - <*> <*> HTTP/1.1"" 200 OK"
+queue,4,2,25.0,2026-04-12 05:04:05 App\Jobs\StreamMessageJob ...................... RUNNING
+reverb,3,2,66.67,

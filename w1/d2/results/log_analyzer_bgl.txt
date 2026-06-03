@@ -1,0 +1,20 @@
+Log file: data\BGL_2k.log
+Total lines: 2000
+Unique templates: 108
+Detected dataset format: BGL
+
+Top-5 templates:
+- T5 | 720 lines | 36.00% | generating <*>
+- T71 | 207 lines | 10.35% | iar <*> dear <*>
+- T2 | 108 lines | 5.40% | <*> double-hummer alignment exceptions
+- T3 | 91 lines | 4.55% | CE sym <*> at <*> mask <*>
+- T56 | 84 lines | 4.20% | <*> floating point alignment exceptions
+
+Template spikes in the last-hour style check (z >= 3.0):
+- T5 | window=2005-07-09 21:00:00 | count=44 | z=4.13 | generating <*>
+- T5 | window=2005-07-13 20:00:00 | count=39 | z=3.57 | generating <*>
+- T1 | window=2005-06-15 09:00:00 | count=7 | z=3.12 | instruction cache parity error corrected
+- T5 | window=2005-07-09 11:00:00 | count=35 | z=3.11 | generating <*>
+
+New templates first seen in the final hour:
+- No new templates in the final hour.

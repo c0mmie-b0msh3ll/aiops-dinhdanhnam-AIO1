@@ -1,0 +1,17 @@
+Log file: data\docker_llm4reqs_backend.log
+Total lines: 478
+Unique templates: 5
+Detected dataset format: Docker
+
+Top-5 templates:
+- T5 | 467 lines | 97.70% | 127.0.0.1 - <*> +0000 <*> /index.php" <*>
+- T5 | 5 lines | 1.05% | 127.0.0.1 - <*> +0000 "GET /index.php" 200
+- T1 | 2 lines | 0.42% | 
+- T3 | 1 lines | 0.21% | [12-Apr-2026 04:49:59] NOTICE: fpm is running, pid 22
+- T2 | 1 lines | 0.21% | INFO Nothing to migrate.
+
+Template spikes in the last-hour style check (z >= 3.0):
+- No strong template-count spikes found.
+
+New templates first seen in the final hour:
+- No new templates in the final hour.

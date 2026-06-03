@@ -1,0 +1,11 @@
+template_id,template,count
+5,generating <*>,720
+71,iar <*> dear <*>,207
+2,<*> double-hummer alignment exceptions,108
+3,CE sym <*> at <*> mask <*>,91
+56,<*> floating point alignment exceptions,84
+95,"<*> total interrupts. 0 critical input interrupts. 0 microseconds total spent on critical input interrupts, 0 microseconds max time in a critical input interrupt.",70
+10,data TLB error interrupt,60
+94,0 microseconds spent in the rbs signal handler during 0 calls. 0 microseconds was the maximum time for a single instance of a correctable ddr.,51
+1,instruction cache parity error corrected,42
+56,8 floating point alignment exceptions,37

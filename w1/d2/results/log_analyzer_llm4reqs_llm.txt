@@ -1,0 +1,17 @@
+Log file: data\docker_llm4reqs_llm.log
+Total lines: 318
+Unique templates: 25
+Detected dataset format: Docker
+
+Top-5 templates:
+- T5 | 238 lines | 74.84% | INFO: <*> - <*> <*> HTTP/1.1" 200 OK
+- T5 | 29 lines | 9.12% | INFO: <*> - "GET / HTTP/1.1" 200 OK
+- T11 | 6 lines | 1.89% | 
+- T18 | 3 lines | 0.94% | Notes:
+- T17 | 3 lines | 0.94% | embeddings.position_ids | UNEXPECTED | |
+
+Template spikes in the last-hour style check (z >= 3.0):
+- No strong template-count spikes found.
+
+New templates first seen in the final hour:
+- T25 | first_seen=2026-04-12 07:02:30.142470648+00:00 | INFO: Shutting down

@@ -1,0 +1,4 @@
+sim_th,unique_templates,total_lines,anomaly_lines
+0.3,100,2000,143
+0.5,108,2000,143
+0.7,919,2000,143

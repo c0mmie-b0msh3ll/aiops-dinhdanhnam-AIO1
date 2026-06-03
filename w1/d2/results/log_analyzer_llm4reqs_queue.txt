@@ -1,0 +1,17 @@
+Log file: data\docker_llm4reqs_queue.log
+Total lines: 4
+Unique templates: 2
+Detected dataset format: Docker
+
+Top-5 templates:
+- T1 | 1 lines | 25.00% | 2026-04-12 05:04:05 App\Jobs\StreamMessageJob ...................... RUNNING
+- T1 | 1 lines | 25.00% | 2026-04-12 <*> App\Jobs\StreamMessageJob ...................... RUNNING
+- T2 | 1 lines | 25.00% | 2026-04-12 05:04:19 App\Jobs\StreamMessageJob ..................... 14s DONE
+- T2 | 1 lines | 25.00% | 2026-04-12 <*> App\Jobs\StreamMessageJob <*> <*> DONE
+
+Template spikes in the last-hour style check (z >= 3.0):
+- No strong template-count spikes found.
+
+New templates first seen in the final hour:
+- T1 | first_seen=2026-04-12 05:04:05.620401339+00:00 | 2026-04-12 05:04:05 App\Jobs\StreamMessageJob ...................... RUNNING
+- T2 | first_seen=2026-04-12 05:04:19.671328917+00:00 | 2026-04-12 05:04:19 App\Jobs\StreamMessageJob ..................... 14s DONE

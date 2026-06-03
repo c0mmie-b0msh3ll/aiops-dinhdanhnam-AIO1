@@ -1,0 +1,37 @@
+{
+  "n_rows": 4032,
+  "start_time": "2014-03-07 03:41:00",
+  "end_time": "2014-03-21 03:41:00",
+  "sampling_interval": "0 days 00:05:00",
+  "sampling_interval_display": "5 ph\u00fat",
+  "n_anomaly": 346,
+  "anomaly_rate": 0.08581349206349206,
+  "mean": 45.155873511904765,
+  "std": 2.287089421774545,
+  "min": 22.864,
+  "max": 99.248,
+  "skewness": 3.0618550731446446,
+  "eda_conclusion": "Series latency b\u1ecb l\u1ec7ch ph\u1ea3i r\u00f5 r\u1ec7t v\u00e0 c\u00f3 c\u00e1c kho\u1ea3ng anomaly \u0111\u00e3 \u0111\u01b0\u1ee3c g\u00e1n nh\u00e3n b\u1edfi NAB. V\u00ec latency th\u01b0\u1eddng c\u00f3 \u0111u\u00f4i d\u00e0i \u1edf ph\u00eda gi\u00e1 tr\u1ecb cao, d\u00f9ng raw 3-sigma s\u1ebd r\u1ee7i ro. Baseline th\u1ed1ng k\u00ea ph\u00f9 h\u1ee3p h\u01a1n l\u00e0 Rolling Log-IQR; Isolation Forest d\u00f9ng th\u00eam c\u00e1c feature theo ng\u1eef c\u1ea3nh \u0111\u1ec3 b\u1eaft nh\u1eefng thay \u0111\u1ed5i h\u00ecnh d\u1ea1ng m\u00e0 threshold \u0111\u01a1n gi\u1ea3n d\u1ec5 b\u1ecf s\u00f3t.",
+  "iqr": {
+    "precision": 0.17553191489361702,
+    "recall": 0.0953757225433526,
+    "f1": 0.12359550561797752,
+    "false_alarms": 155,
+    "tp": 33,
+    "fp": 155,
+    "fn": 313,
+    "tn": 3531
+  },
+  "if_best": {
+    "precision": 0.365,
+    "recall": 0.21098265895953758,
+    "f1": 0.2673992673992674,
+    "false_alarms": 127,
+    "tp": 73,
+    "fp": 127,
+    "fn": 273,
+    "tn": 3559
+  },
+  "best_contamination": 0.05,
+  "reflection": "Dataset n\u00e0y gi\u1ed1ng m\u1ed9t metric latency th\u1ef1c t\u1ebf: ph\u00e2n ph\u1ed1i kh\u00f4ng Gaussian, b\u1ecb l\u1ec7ch ph\u1ea3i m\u1ea1nh v\u1edbi skewness=3.062, n\u00ean raw 3-sigma kh\u00f4ng ph\u1ea3i l\u1ef1a ch\u1ecdn t\u1ed1t nh\u1ea5t. Rolling Log-IQR d\u1ec5 gi\u1ea3i th\u00edch, chi ph\u00ed th\u1ea5p v\u00e0 robust v\u1edbi skew, nh\u01b0ng ch\u1ec9 nh\u00ecn m\u1ed9t metric n\u00ean c\u00f2n miss nhi\u1ec1u contextual anomaly. Isolation Forest d\u00f9ng c\u00e1c feature theo ng\u1eef c\u1ea3nh nh\u01b0 rolling mean, rolling std, lag, rate of change, hour v\u00e0 z-score. Isolation Forest c\u00f3 F1 t\u1ed1t h\u01a1n trong l\u1ea7n ch\u1ea1y n\u00e0y. N\u1ebfu \u0111\u01b0a v\u00e0o production AIOps, m\u00ecnh s\u1ebd \u01b0u ti\u00ean recall cho metric quan tr\u1ecdng nh\u01b0 latency/error rate, sau \u0111\u00f3 ki\u1ec3m so\u00e1t alert fatigue b\u1eb1ng correlation, service ownership v\u00e0 severity routing."
+}

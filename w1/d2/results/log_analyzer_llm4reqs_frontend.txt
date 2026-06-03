@@ -1,0 +1,21 @@
+Log file: data\docker_llm4reqs_frontend.log
+Total lines: 882
+Unique templates: 20
+Detected dataset format: Docker
+
+Top-5 templates:
+- T15 | 811 lines | 91.95% | 172.19.0.1 - - <*> +0000] <*> <*> HTTP/1.1" <*> <*> <*> "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36" "-"
+- T18 | 10 lines | 1.13% | 2026/04/12 07:02:06 [notice] <*> <*>
+- T13 | 7 lines | 0.79% | 2026/04/12 04:49:59 [notice] 1#1: start worker process <*>
+- T15 | 7 lines | 0.79% | 172.19.0.1 - - [12/Apr/2026:04:52:15 +0000] "GET <*> HTTP/1.1" 200 <*> <*> "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36" "-"
+- T19 | 7 lines | 0.79% | 2026/04/12 07:02:06 [notice] 1#1: worker process <*> exited with code 0
+
+Template spikes in the last-hour style check (z >= 3.0):
+- No strong template-count spikes found.
+
+New templates first seen in the final hour:
+- T16 | first_seen=2026-04-12 07:02:06.022224951+00:00 | 2026/04/12 07:02:06 [notice] 1#1: signal 3 (SIGQUIT) received, shutting down
+- T17 | first_seen=2026-04-12 07:02:06.024562640+00:00 | 2026/04/12 07:02:06 [notice] 32#32: gracefully shutting down
+- T18 | first_seen=2026-04-12 07:02:06.026724094+00:00 | 2026/04/12 07:02:06 [notice] 37#37: exiting
+- T19 | first_seen=2026-04-12 07:02:06.175377405+00:00 | 2026/04/12 07:02:06 [notice] 1#1: worker process 33 exited with code 0
+- T20 | first_seen=2026-04-12 07:02:06.176057784+00:00 | 2026/04/12 07:02:06 [notice] 1#1: signal 29 (SIGIO) received

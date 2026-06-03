@@ -1,0 +1,41 @@
+[
+  {
+    "tier": "Small",
+    "services": 10,
+    "log_gb_day": 50,
+    "metric_events_sec": 100000,
+    "build_storage_usd": 640.4,
+    "build_compute_usd": 200.0,
+    "build_network_usd": 30.0,
+    "build_total_usd": 870.4,
+    "datadog_total_usd": 2100.0,
+    "build_vs_buy_delta_usd": 1229.6,
+    "recommendation": "Buy first"
+  },
+  {
+    "tier": "Medium",
+    "services": 100,
+    "log_gb_day": 500,
+    "metric_events_sec": 1000000,
+    "build_storage_usd": 6404.0,
+    "build_compute_usd": 2000.0,
+    "build_network_usd": 300.0,
+    "build_total_usd": 8704.0,
+    "datadog_total_usd": 21000.0,
+    "build_vs_buy_delta_usd": 12296.0,
+    "recommendation": "Hybrid / build core pipeline"
+  },
+  {
+    "tier": "Large",
+    "services": 1000,
+    "log_gb_day": 5000,
+    "metric_events_sec": 10000000,
+    "build_storage_usd": 64040.0,
+    "build_compute_usd": 20000.0,
+    "build_network_usd": 3000.0,
+    "build_total_usd": 87040.0,
+    "datadog_total_usd": 210000.0,
+    "build_vs_buy_delta_usd": 122960.0,
+    "recommendation": "Hybrid / build core pipeline"
+  }
+]
