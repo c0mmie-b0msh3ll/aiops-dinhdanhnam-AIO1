@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import math
+import re
 from collections import defaultdict, deque
 from datetime import datetime
 from pathlib import Path
@@ -41,6 +43,22 @@ def parse_ts(value: str) -> datetime:
 
 def fingerprint(alert: dict[str, Any]) -> str:
     return f"{alert['service']}|{alert['metric']}|{alert['severity']}"
+
+
+def alert_text(alert: dict[str, Any]) -> str:
+    labels = alert.get("labels") or {}
+    return " ".join(
+        [
+            str(alert.get("service", "")),
+            str(alert.get("metric", "")),
+            str(alert.get("severity", "")),
+            str(labels.get("note", "")),
+        ]
+    )
+
+
+def tokenize(text: str) -> list[str]:
+    return [token for token in re.split(r"[^a-zA-Z0-9]+", text.lower()) if token]
 
 
 def session_groups(alerts: list[dict[str, Any]], gap_sec: int = 120) -> list[list[dict[str, Any]]]:
@@ -145,6 +163,79 @@ def correlate(
     }
 
 
+def semantic_similarity(alerts: list[dict[str, Any]], top_k: int = 10) -> dict[str, Any]:
+    """Optional semantic layer using TF-IDF cosine over alert fingerprints.
+
+    This is intentionally local and dependency-free. It does not replace
+    topology/time correlation; it is a supporting signal to find alerts that say
+    similar things even when metric names are not identical.
+    """
+    by_fp: dict[str, dict[str, Any]] = {}
+    for alert in alerts:
+        fp = fingerprint(alert)
+        if fp not in by_fp:
+            by_fp[fp] = {
+                "fingerprint": fp,
+                "service": alert["service"],
+                "metric": alert["metric"],
+                "severity": alert["severity"],
+                "texts": [],
+                "count": 0,
+            }
+        by_fp[fp]["texts"].append(alert_text(alert))
+        by_fp[fp]["count"] += 1
+
+    documents = list(by_fp.values())
+    tokenized = [tokenize(" ".join(doc["texts"])) for doc in documents]
+    doc_count = len(tokenized)
+    document_frequency: dict[str, int] = defaultdict(int)
+    for tokens in tokenized:
+        for token in set(tokens):
+            document_frequency[token] += 1
+
+    vectors: list[dict[str, float]] = []
+    for tokens in tokenized:
+        counts: dict[str, int] = defaultdict(int)
+        for token in tokens:
+            counts[token] += 1
+        total = max(len(tokens), 1)
+        vector: dict[str, float] = {}
+        for token, count in counts.items():
+            tf = count / total
+            idf = math.log((1 + doc_count) / (1 + document_frequency[token])) + 1
+            vector[token] = tf * idf
+        vectors.append(vector)
+
+    pairs: list[dict[str, Any]] = []
+    for i, left in enumerate(documents):
+        for j, right in enumerate(documents[i + 1 :], start=i + 1):
+            score = cosine(vectors[i], vectors[j])
+            if score > 0:
+                pairs.append(
+                    {
+                        "left": left["fingerprint"],
+                        "right": right["fingerprint"],
+                        "similarity": round(score, 4),
+                    }
+                )
+    pairs.sort(key=lambda item: item["similarity"], reverse=True)
+    return {
+        "method": "tfidf_cosine",
+        "fingerprint_count": len(documents),
+        "top_pairs": pairs[:top_k],
+    }
+
+
+def cosine(left: dict[str, float], right: dict[str, float]) -> float:
+    common = set(left) & set(right)
+    numerator = sum(left[token] * right[token] for token in common)
+    left_norm = math.sqrt(sum(value * value for value in left.values()))
+    right_norm = math.sqrt(sum(value * value for value in right.values()))
+    if left_norm == 0 or right_norm == 0:
+        return 0.0
+    return numerator / (left_norm * right_norm)
+
+
 def main() -> None:
     base = Path(__file__).resolve().parent
     alerts = load_jsonl(base / "lab" / "dataset" / "alerts_sample.jsonl")
@@ -153,7 +244,11 @@ def main() -> None:
     out_path = base / "results" / "cluster_summary.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    semantic = semantic_similarity(alerts)
+    semantic_path = base / "results" / "semantic_similarity.json"
+    semantic_path.write_text(json.dumps(semantic, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False, indent=2))
+    print(f"\nWrote optional semantic layer: {semantic_path}")
 
 
 if __name__ == "__main__":

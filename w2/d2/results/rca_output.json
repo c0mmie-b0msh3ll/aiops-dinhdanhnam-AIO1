@@ -1,0 +1,86 @@
+{
+  "clusters_analyzed": 3,
+  "results": [
+    {
+      "cluster_id": "c-000-000",
+      "graph_top3": [
+        [
+          "payment-svc",
+          0.9025
+        ],
+        [
+          "checkout-svc",
+          0.7037
+        ],
+        [
+          "notification-svc",
+          0.6625
+        ]
+      ],
+      "root_cause": "payment-svc",
+      "class": "connection_pool_exhaustion",
+      "confidence": 0.7508,
+      "actions": [
+        "Check payment-svc connection pool usage and recent deploy/config changes",
+        "Temporarily increase DB pool or reduce concurrency if saturation continues",
+        "Inspect slow queries and rollback the latest risky payment change if needed"
+      ],
+      "reasoning": "payment-svc is ranked highest because it is earlier/lower in the dependency graph and appears central to services cart-svc, checkout-svc, edge-lb, notification-svc, payment-svc.",
+      "similar_incidents": [
+        "INC-2025-11-08",
+        "INC-2026-05-10",
+        "INC-2026-02-14"
+      ],
+      "method": "graph+retrieval"
+    },
+    {
+      "cluster_id": "c-000-001",
+      "graph_top3": [
+        [
+          "recommender-svc",
+          1.0
+        ]
+      ],
+      "root_cause": "recommender-svc",
+      "class": "memory_leak",
+      "confidence": 0.7833,
+      "actions": [
+        "Check heap/memory dashboard for recommender-svc",
+        "Restart affected pods only if memory keeps growing",
+        "Compare with latest batch/retrain job or deploy"
+      ],
+      "reasoning": "recommender-svc is ranked highest because it is earlier/lower in the dependency graph and appears central to services recommender-svc.",
+      "similar_incidents": [
+        "INC-2026-02-14",
+        "INC-2025-11-08",
+        "INC-2026-05-10"
+      ],
+      "method": "graph+retrieval"
+    },
+    {
+      "cluster_id": "c-001-000",
+      "graph_top3": [
+        [
+          "search-index",
+          0.75
+        ],
+        [
+          "search-svc",
+          0.675
+        ]
+      ],
+      "root_cause": "search-index",
+      "class": "slow_query",
+      "confidence": 0.7,
+      "actions": [
+        "Check query/index latency for search-index",
+        "Inspect backing store CPU and recent indexing jobs"
+      ],
+      "reasoning": "search-index is ranked highest because it is earlier/lower in the dependency graph and appears central to services search-index, search-svc.",
+      "similar_incidents": [
+        "INC-2026-03-21"
+      ],
+      "method": "graph+retrieval"
+    }
+  ]
+}

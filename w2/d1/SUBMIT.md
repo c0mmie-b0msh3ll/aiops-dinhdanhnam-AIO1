@@ -14,6 +14,26 @@ Em làm alert correlation theo 3 lớp: dedup bằng fingerprint, gom alert theo
 
 Cluster chính là payment/checkout/edge cascade, gồm 14 alert. Recommender có alert cùng thời điểm nhưng không nằm cùng dependency graph nên được tách riêng. Search xảy ra sau đó nên là cluster khác.
 
+## Optional: Semantic / Similarity Correlation
+
+Em cũng làm thêm phần optional semantic correlation bằng TF-IDF cosine similarity trên text của alert fingerprint. Text được ghép từ `service`, `metric`, `severity` và `labels.note`. Phần này không thay thế time-window + topology, mà dùng như một signal phụ để biết các alert nào đang nói về cùng một hiện tượng.
+
+Output nằm ở:
+
+```text
+results/semantic_similarity.json
+```
+
+Top similarity pairs:
+
+| Pair | Similarity | Nhận xét |
+| --- | ---: | --- |
+| `notification-svc queue_lag warn` ↔ `notification-svc queue_lag crit` | 0.8881 | Cùng metric, khác severity |
+| `checkout-svc http_5xx_rate` ↔ `payment-svc http_5xx_rate` | 0.7517 | Cùng loại symptom 5xx trong cascade |
+| `payment-svc latency_p99_ms` ↔ `checkout-svc latency_p99_ms` | 0.7023 | Cùng symptom latency trên 2 service gần nhau |
+
+Điểm em rút ra là semantic similarity giúp nhìn ra các alert giống nhau về wording/metric. Tuy nhiên nếu chỉ dùng semantic similarity thì có thể gom nhầm `cart-svc latency` với `search-svc latency`, vì cùng metric latency nhưng không cùng incident. Vì vậy em vẫn dùng topology + time-window làm quyết định chính, còn semantic là layer bổ sung.
+
 ## Vì sao chọn `gap_sec = 120`
 
 Em chọn `gap_sec = 120` vì đây là mức cân bằng giữa quá ngắn và quá dài. Nếu gap chỉ 30 giây, một incident kéo dài vài phút có thể bị cắt thành nhiều cluster nhỏ, làm RCA ngày sau vẫn phải xử lý nhiều nhóm. Nếu gap quá dài như 600 giây, hai incident khác nhau nhưng xảy ra gần nhau có thể bị gom nhầm. Với dataset này, payment incident có nhiều alert nối tiếp trong vài phút, nên 120 giây đủ để giữ chúng trong cùng session.

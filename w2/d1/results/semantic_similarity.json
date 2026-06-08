@@ -1,0 +1,56 @@
+{
+  "method": "tfidf_cosine",
+  "fingerprint_count": 15,
+  "top_pairs": [
+    {
+      "left": "notification-svc|queue_lag|warn",
+      "right": "notification-svc|queue_lag|crit",
+      "similarity": 0.8881
+    },
+    {
+      "left": "checkout-svc|http_5xx_rate|crit",
+      "right": "payment-svc|http_5xx_rate|crit",
+      "similarity": 0.7517
+    },
+    {
+      "left": "payment-svc|latency_p99_ms|crit",
+      "right": "checkout-svc|latency_p99_ms|crit",
+      "similarity": 0.7023
+    },
+    {
+      "left": "cart-svc|latency_p99_ms|warn",
+      "right": "search-svc|latency_p99_ms|warn",
+      "similarity": 0.6953
+    },
+    {
+      "left": "payment-svc|http_5xx_rate|crit",
+      "right": "edge-lb|http_5xx_rate|crit",
+      "similarity": 0.631
+    },
+    {
+      "left": "checkout-svc|http_5xx_rate|crit",
+      "right": "edge-lb|http_5xx_rate|crit",
+      "similarity": 0.6134
+    },
+    {
+      "left": "payment-svc|latency_p99_ms|crit",
+      "right": "search-svc|latency_p99_ms|warn",
+      "similarity": 0.6067
+    },
+    {
+      "left": "checkout-svc|latency_p99_ms|crit",
+      "right": "search-svc|latency_p99_ms|warn",
+      "similarity": 0.5865
+    },
+    {
+      "left": "payment-svc|latency_p99_ms|crit",
+      "right": "edge-lb|latency_p99_ms|crit",
+      "similarity": 0.5663
+    },
+    {
+      "left": "payment-svc|latency_p99_ms|crit",
+      "right": "cart-svc|latency_p99_ms|warn",
+      "similarity": 0.5619
+    }
+  ]
+}

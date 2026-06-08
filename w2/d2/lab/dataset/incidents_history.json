@@ -1,0 +1,40 @@
+﻿{
+  "incidents": [
+    {
+      "id": "INC-2025-11-08",
+      "root_cause_service": "payment-svc",
+      "root_cause_class": "connection_pool_exhaustion",
+      "services_involved": ["payment-svc", "checkout-svc", "edge-lb", "notification-svc"],
+      "severity": "crit",
+      "summary": "Payment DB pool saturated after checkout traffic burst, causing checkout 5xx and edge latency.",
+      "remediation": "Increase pool temporarily, rollback risky payment deploy, inspect slow queries."
+    },
+    {
+      "id": "INC-2026-02-14",
+      "root_cause_service": "recommender-svc",
+      "root_cause_class": "memory_leak",
+      "services_involved": ["recommender-svc"],
+      "severity": "crit",
+      "summary": "Recommender batch retrain leaked memory and restarted pods.",
+      "remediation": "Disable retrain job and restart affected pods."
+    },
+    {
+      "id": "INC-2026-03-21",
+      "root_cause_service": "search-index",
+      "root_cause_class": "slow_query",
+      "services_involved": ["search-svc", "search-index"],
+      "severity": "warn",
+      "summary": "Search index CPU high during reindex job, causing search latency warnings.",
+      "remediation": "Throttle reindex job and add capacity to search index."
+    },
+    {
+      "id": "INC-2026-05-10",
+      "root_cause_service": "cart-redis",
+      "root_cause_class": "cache_eviction",
+      "services_involved": ["cart-svc", "cart-redis", "checkout-svc"],
+      "severity": "crit",
+      "summary": "Redis eviction caused cart latency and checkout degradation.",
+      "remediation": "Increase Redis memory and reduce cart cache TTL."
+    }
+  ]
+}
