@@ -1,0 +1,99 @@
+{
+  "input_alerts": 20,
+  "output_clusters": 3,
+  "reduction_ratio": 0.85,
+  "parameters": {
+    "gap_sec": 120,
+    "max_hop": 2
+  },
+  "clusters": [
+    {
+      "cluster_id": "c-000-000",
+      "alert_count": 14,
+      "services": [
+        "cart-svc",
+        "checkout-svc",
+        "edge-lb",
+        "notification-svc",
+        "payment-svc"
+      ],
+      "alert_ids": [
+        "a-001",
+        "a-002",
+        "a-003",
+        "a-004",
+        "a-005",
+        "a-006",
+        "a-007",
+        "a-008",
+        "a-009",
+        "a-010",
+        "a-011",
+        "a-012",
+        "a-013",
+        "a-014"
+      ],
+      "time_range": [
+        "2026-06-12T09:42:01Z",
+        "2026-06-12T09:48:30Z"
+      ],
+      "max_severity": "crit",
+      "fingerprints": [
+        "cart-svc|latency_p99_ms|warn",
+        "checkout-svc|http_5xx_rate|crit",
+        "checkout-svc|latency_p99_ms|crit",
+        "edge-lb|http_5xx_rate|crit",
+        "edge-lb|latency_p99_ms|crit",
+        "notification-svc|queue_lag|crit",
+        "notification-svc|queue_lag|warn",
+        "payment-svc|db_pool_used_ratio|crit",
+        "payment-svc|http_5xx_rate|crit",
+        "payment-svc|latency_p99_ms|crit"
+      ]
+    },
+    {
+      "cluster_id": "c-000-001",
+      "alert_count": 2,
+      "services": [
+        "recommender-svc"
+      ],
+      "alert_ids": [
+        "a-015",
+        "a-016"
+      ],
+      "time_range": [
+        "2026-06-12T09:44:10Z",
+        "2026-06-12T09:45:20Z"
+      ],
+      "max_severity": "crit",
+      "fingerprints": [
+        "recommender-svc|memory_usage_percent|crit",
+        "recommender-svc|oom_restarts|crit"
+      ]
+    },
+    {
+      "cluster_id": "c-001-000",
+      "alert_count": 4,
+      "services": [
+        "search-index",
+        "search-svc"
+      ],
+      "alert_ids": [
+        "a-017",
+        "a-018",
+        "a-019",
+        "a-020"
+      ],
+      "time_range": [
+        "2026-06-12T10:10:00Z",
+        "2026-06-12T10:11:55Z"
+      ],
+      "max_severity": "warn",
+      "fingerprints": [
+        "search-index|cpu_percent|warn",
+        "search-svc|error_rate|warn",
+        "search-svc|latency_p99_ms|warn"
+      ]
+    }
+  ]
+}

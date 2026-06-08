@@ -1,0 +1,20 @@
+﻿{"id":"a-001","ts":"2026-06-12T09:42:01Z","service":"payment-svc","metric":"db_pool_used_ratio","severity":"crit","value":0.96,"threshold":0.85,"labels":{"env":"prod","note":"connection pool near exhausted"}}
+{"id":"a-002","ts":"2026-06-12T09:42:25Z","service":"payment-svc","metric":"latency_p99_ms","severity":"crit","value":1840,"threshold":800,"labels":{"env":"prod"}}
+{"id":"a-003","ts":"2026-06-12T09:43:02Z","service":"checkout-svc","metric":"latency_p99_ms","severity":"crit","value":1650,"threshold":700,"labels":{"env":"prod"}}
+{"id":"a-004","ts":"2026-06-12T09:43:31Z","service":"edge-lb","metric":"latency_p99_ms","severity":"crit","value":3020,"threshold":1200,"labels":{"env":"prod"}}
+{"id":"a-005","ts":"2026-06-12T09:44:00Z","service":"checkout-svc","metric":"http_5xx_rate","severity":"crit","value":12.8,"threshold":3.0,"labels":{"env":"prod"}}
+{"id":"a-006","ts":"2026-06-12T09:44:23Z","service":"payment-svc","metric":"http_5xx_rate","severity":"crit","value":18.2,"threshold":2.0,"labels":{"env":"prod"}}
+{"id":"a-007","ts":"2026-06-12T09:44:52Z","service":"notification-svc","metric":"queue_lag","severity":"warn","value":840,"threshold":300,"labels":{"env":"prod"}}
+{"id":"a-008","ts":"2026-06-12T09:45:15Z","service":"payment-svc","metric":"db_pool_used_ratio","severity":"crit","value":0.98,"threshold":0.85,"labels":{"env":"prod","note":"duplicate pool alert"}}
+{"id":"a-009","ts":"2026-06-12T09:45:50Z","service":"checkout-svc","metric":"latency_p99_ms","severity":"crit","value":1760,"threshold":700,"labels":{"env":"prod"}}
+{"id":"a-010","ts":"2026-06-12T09:46:12Z","service":"edge-lb","metric":"http_5xx_rate","severity":"crit","value":9.4,"threshold":2.5,"labels":{"env":"prod"}}
+{"id":"a-011","ts":"2026-06-12T09:46:50Z","service":"payment-svc","metric":"latency_p99_ms","severity":"crit","value":1930,"threshold":800,"labels":{"env":"prod"}}
+{"id":"a-012","ts":"2026-06-12T09:47:30Z","service":"cart-svc","metric":"latency_p99_ms","severity":"warn","value":610,"threshold":500,"labels":{"env":"prod"}}
+{"id":"a-013","ts":"2026-06-12T09:48:02Z","service":"notification-svc","metric":"queue_lag","severity":"crit","value":1250,"threshold":800,"labels":{"env":"prod"}}
+{"id":"a-014","ts":"2026-06-12T09:48:30Z","service":"checkout-svc","metric":"http_5xx_rate","severity":"crit","value":14.3,"threshold":3.0,"labels":{"env":"prod"}}
+{"id":"a-015","ts":"2026-06-12T09:44:10Z","service":"recommender-svc","metric":"memory_usage_percent","severity":"crit","value":94.0,"threshold":85.0,"labels":{"env":"prod","note":"batch retrain"}}
+{"id":"a-016","ts":"2026-06-12T09:45:20Z","service":"recommender-svc","metric":"oom_restarts","severity":"crit","value":2,"threshold":1,"labels":{"env":"prod","note":"batch retrain"}}
+{"id":"a-017","ts":"2026-06-12T10:10:00Z","service":"search-svc","metric":"latency_p99_ms","severity":"warn","value":720,"threshold":500,"labels":{"env":"prod"}}
+{"id":"a-018","ts":"2026-06-12T10:10:40Z","service":"search-svc","metric":"error_rate","severity":"warn","value":2.7,"threshold":1.5,"labels":{"env":"prod"}}
+{"id":"a-019","ts":"2026-06-12T10:11:10Z","service":"search-svc","metric":"latency_p99_ms","severity":"warn","value":760,"threshold":500,"labels":{"env":"prod"}}
+{"id":"a-020","ts":"2026-06-12T10:11:55Z","service":"search-index","metric":"cpu_percent","severity":"warn","value":91.2,"threshold":80.0,"labels":{"env":"prod"}}

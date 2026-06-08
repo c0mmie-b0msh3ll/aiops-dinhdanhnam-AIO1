@@ -1,0 +1,27 @@
+﻿{
+  "services": [
+    {"name": "edge-lb", "type": "gateway", "team": "platform"},
+    {"name": "checkout-svc", "type": "service", "team": "checkout"},
+    {"name": "payment-svc", "type": "service", "team": "payments"},
+    {"name": "cart-svc", "type": "service", "team": "checkout"},
+    {"name": "inventory-svc", "type": "service", "team": "inventory"},
+    {"name": "notification-svc", "type": "service", "team": "growth"},
+    {"name": "recommender-svc", "type": "service", "team": "ml"},
+    {"name": "search-svc", "type": "service", "team": "search"}
+  ],
+  "stores": [
+    {"name": "payments-db", "type": "postgres"},
+    {"name": "cart-redis", "type": "redis"},
+    {"name": "search-index", "type": "opensearch"}
+  ],
+  "edges": [
+    {"from": "edge-lb", "to": "checkout-svc", "type": "http"},
+    {"from": "checkout-svc", "to": "payment-svc", "type": "grpc"},
+    {"from": "checkout-svc", "to": "cart-svc", "type": "http"},
+    {"from": "checkout-svc", "to": "inventory-svc", "type": "http"},
+    {"from": "checkout-svc", "to": "notification-svc", "type": "kafka"},
+    {"from": "cart-svc", "to": "cart-redis", "type": "redis"},
+    {"from": "payment-svc", "to": "payments-db", "type": "postgres"},
+    {"from": "search-svc", "to": "search-index", "type": "opensearch"}
+  ]
+}
