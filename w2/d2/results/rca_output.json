@@ -10,11 +10,11 @@
         ],
         [
           "checkout-svc",
-          0.7037
+          0.6587
         ],
         [
-          "notification-svc",
-          0.6625
+          "cart-svc",
+          0.6213
         ]
       ],
       "root_cause": "payment-svc",
@@ -42,41 +42,33 @@
         ]
       ],
       "root_cause": "recommender-svc",
-      "class": "memory_leak",
+      "class": "other",
       "confidence": 0.7833,
       "actions": [
-        "Check heap/memory dashboard for recommender-svc",
-        "Restart affected pods only if memory keeps growing",
-        "Compare with latest batch/retrain job or deploy"
+        "Investigate recommender-svc manually with logs, traces, and recent changes"
       ],
       "reasoning": "recommender-svc is ranked highest because it is earlier/lower in the dependency graph and appears central to services recommender-svc.",
       "similar_incidents": [
         "INC-2026-02-14",
-        "INC-2025-11-08",
-        "INC-2026-05-10"
+        "INC-2026-03-21"
       ],
       "method": "graph+retrieval"
     },
     {
-      "cluster_id": "c-001-000",
+      "cluster_id": "c-000-002",
       "graph_top3": [
         [
-          "search-index",
-          0.75
-        ],
-        [
           "search-svc",
-          0.675
+          1.0
         ]
       ],
-      "root_cause": "search-index",
-      "class": "slow_query",
-      "confidence": 0.7,
+      "root_cause": "search-svc",
+      "class": "other",
+      "confidence": 0.7833,
       "actions": [
-        "Check query/index latency for search-index",
-        "Inspect backing store CPU and recent indexing jobs"
+        "Investigate search-svc manually with logs, traces, and recent changes"
       ],
-      "reasoning": "search-index is ranked highest because it is earlier/lower in the dependency graph and appears central to services search-index, search-svc.",
+      "reasoning": "search-svc is ranked highest because it is earlier/lower in the dependency graph and appears central to services search-svc.",
       "similar_incidents": [
         "INC-2026-03-21"
       ],

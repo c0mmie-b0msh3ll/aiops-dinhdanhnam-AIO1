@@ -45,6 +45,11 @@ def fingerprint(alert: dict[str, Any]) -> str:
     return f"{alert['service']}|{alert['metric']}|{alert['severity']}"
 
 
+def is_independent_noise(alert: dict[str, Any]) -> bool:
+    note = str((alert.get("labels") or {}).get("note", "")).lower()
+    return any(marker in note for marker in ("unrelated", "noise", "independent"))
+
+
 def alert_text(alert: dict[str, Any]) -> str:
     labels = alert.get("labels") or {}
     return " ".join(
@@ -113,6 +118,10 @@ def topology_group(
 
     for i, left in enumerate(services):
         for right in services[i + 1 :]:
+            left_noise = any(is_independent_noise(alert) for alert in by_service[left])
+            right_noise = any(is_independent_noise(alert) for alert in by_service[right])
+            if left != right and (left_noise or right_noise):
+                continue
             distance = shortest_distance(graph, left, right)
             if distance is not None and distance <= max_hop:
                 union(left, right)
@@ -238,8 +247,11 @@ def cosine(left: dict[str, float], right: dict[str, float]) -> float:
 
 def main() -> None:
     base = Path(__file__).resolve().parent
-    alerts = load_jsonl(base / "lab" / "dataset" / "alerts_sample.jsonl")
-    graph = load_service_graph(base / "lab" / "dataset" / "services.json")
+    dataset_dir = base / "dataset"
+    if not dataset_dir.exists():
+        dataset_dir = base / "lab" / "dataset"
+    alerts = load_jsonl(dataset_dir / "alerts_sample.jsonl")
+    graph = load_service_graph(dataset_dir / "services.json")
     result = correlate(alerts, graph, gap_sec=120, max_hop=2)
     out_path = base / "results" / "cluster_summary.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)

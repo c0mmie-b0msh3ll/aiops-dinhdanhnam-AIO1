@@ -10,19 +10,19 @@ Output nằm ở:
 results/rca_output.json
 ```
 
-Kết quả:
+Kết quả sau khi cập nhật dataset chính thức:
 
 | Cluster | Root cause | Class | Confidence | Method |
 | --- | --- | --- | ---: | --- |
 | `c-000-000` | `payment-svc` | `connection_pool_exhaustion` | 0.7508 | graph+retrieval |
-| `c-000-001` | `recommender-svc` | `memory_leak` | 0.7833 | graph+retrieval |
-| `c-001-000` | `search-index` | `slow_query` | 0.7000 | graph+retrieval |
+| `c-000-001` | `recommender-svc` | `other` | 0.7833 | graph+retrieval |
+| `c-000-002` | `search-svc` | `other` | 0.7833 | graph+retrieval |
 
 ## EOD Checkpoint
 
 ### 1. Culprit vs victim
 
-Trong cluster chính, em xem `payment-svc` là culprit và `checkout-svc` là victim. Lý do là graph có hướng `edge-lb -> checkout-svc -> payment-svc`, nghĩa là checkout phụ thuộc vào payment. Nếu payment bị nghẽn DB pool thì checkout sẽ bị latency/5xx theo. `edge-lb` cũng là victim vì nó nằm upstream của checkout.
+Trong cluster chính, em xem `payment-svc` là culprit và `checkout-svc` là victim. Lý do là graph có hướng `edge-lb -> checkout-svc -> payment-svc`, nghĩa là checkout phụ thuộc vào payment. Nếu payment bị nghẽn DB pool thì checkout sẽ bị latency/error theo. `edge-lb` cũng là victim vì nó nằm upstream của checkout.
 
 ### 2. PageRank/top-3 cho cluster chính
 
@@ -31,10 +31,10 @@ Top-3 RCA candidate cho cluster chính:
 | Rank | Service | Score |
 | ---: | --- | ---: |
 | 1 | `payment-svc` | 0.9025 |
-| 2 | `checkout-svc` | 0.7037 |
-| 3 | `notification-svc` | 0.6625 |
+| 2 | `checkout-svc` | 0.6587 |
+| 3 | `cart-svc` | 0.6213 |
 
-Payment đứng đầu vì nó nằm thấp hơn trong dependency graph và alert đầu tiên là `db_pool_used_ratio`.
+Payment đứng đầu vì alert đầu tiên là `db_connection_pool_used_ratio`, service này nằm thấp hơn trong dependency path của checkout/edge, và các symptom sau đó giống cascade từ payment.
 
 ### 3. Em có dùng Granger causality không?
 
