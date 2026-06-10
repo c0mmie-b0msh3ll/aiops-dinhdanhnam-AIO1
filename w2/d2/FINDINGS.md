@@ -14,6 +14,12 @@ Top 3 candidate cho cluster chính:
 | 2 | checkout-svc | 0.6587 |
 | 3 | cart-svc | 0.6213 |
 
+## Classifier và retrieval
+
+Em dùng retrieval-only classifier: sau khi graph chọn root cause candidate, code retrieve top-3 similar incident từ `incidents_history.json`. Class và action lấy từ top-1 similar incident. Với cluster chính, top similar là `INC-2025-11-08`, nên class là `connection_pool_exhaustion` và action là rollback/scale pool/add pool monitor.
+
+Em không chọn bonus Decision Tree/TF-IDF/LLM vì retrieval-only đã đủ cho dataset này: history có incident payment pool rất gần với cluster chính, output dễ kiểm chứng, không cần API key, và ít rủi ro hallucination. Nếu làm tiếp, bonus hợp lý nhất là TF-IDF vì nó cải thiện retrieval nhưng vẫn chạy local.
+
 ## Confidence và auto-remediation
 
 Confidence của cluster chính là `0.7508`. Với mức này em chưa dám auto-rollback ngay. Em nghĩ output đủ tốt để ưu tiên điều tra `payment-svc` trước, nhưng rollback production vẫn nên có SRE confirm vì topology graph có thể thiếu edge hoặc alert có thể bị trễ. Nếu confidence trên `0.9`, có nhiều incident tương tự trong history, và action chỉ là scale/increase pool tạm thời thì em mới thấy gần với auto-remediation hơn.

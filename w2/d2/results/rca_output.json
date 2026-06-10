@@ -21,15 +21,13 @@
       "class": "connection_pool_exhaustion",
       "confidence": 0.7508,
       "actions": [
-        "Check payment-svc connection pool usage and recent deploy/config changes",
-        "Temporarily increase DB pool or reduce concurrency if saturation continues",
-        "Inspect slow queries and rollback the latest risky payment change if needed"
+        "Rollback to v3.1. Scale pool 50 → 100 cushion. Add pool monitor alert > 80%."
       ],
       "reasoning": "payment-svc is ranked highest because it is earlier/lower in the dependency graph and appears central to services cart-svc, checkout-svc, edge-lb, notification-svc, payment-svc.",
       "similar_incidents": [
         "INC-2025-11-08",
-        "INC-2026-05-10",
-        "INC-2026-02-14"
+        "INC-2026-03-20",
+        "INC-2026-01-04"
       ],
       "method": "graph+retrieval"
     },
@@ -42,15 +40,16 @@
         ]
       ],
       "root_cause": "recommender-svc",
-      "class": "other",
+      "class": "batch_overlap",
       "confidence": 0.7833,
       "actions": [
-        "Investigate recommender-svc manually with logs, traces, and recent changes"
+        "Stagger schedule. Move retrain to read replica."
       ],
       "reasoning": "recommender-svc is ranked highest because it is earlier/lower in the dependency graph and appears central to services recommender-svc.",
       "similar_incidents": [
-        "INC-2026-02-14",
-        "INC-2026-03-21"
+        "INC-2026-03-07",
+        "INC-2025-10-28",
+        "INC-2026-06-02"
       ],
       "method": "graph+retrieval"
     },
@@ -63,14 +62,16 @@
         ]
       ],
       "root_cause": "search-svc",
-      "class": "other",
+      "class": "n_plus_1",
       "confidence": 0.7833,
       "actions": [
-        "Investigate search-svc manually with logs, traces, and recent changes"
+        "Batch fetch related products. Add monitoring query count / request."
       ],
       "reasoning": "search-svc is ranked highest because it is earlier/lower in the dependency graph and appears central to services search-svc.",
       "similar_incidents": [
-        "INC-2026-03-21"
+        "INC-2026-01-29",
+        "INC-2026-05-25",
+        "INC-2025-12-01"
       ],
       "method": "graph+retrieval"
     }

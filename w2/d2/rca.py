@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections import defaultdict, deque
 from pathlib import Path
 from typing import Any
@@ -125,9 +126,49 @@ def incident_similarity(cluster: dict[str, Any], history_item: dict[str, Any]) -
         score += 0.4
     overlap = services & history_services
     score += min(0.4, 0.12 * len(overlap))
-    if cluster.get("max_severity") == history_item.get("severity"):
+    if normalize_severity(cluster.get("max_severity")) == normalize_severity(history_item.get("severity")):
         score += 0.2
+    cluster_tokens = set(cluster.get("text_tokens", []))
+    history_tokens = tokenize_history(history_item)
+    if cluster_tokens and history_tokens:
+        score += min(0.25, len(cluster_tokens & history_tokens) / len(cluster_tokens | history_tokens))
     return round(min(score, 1.0), 4)
+
+
+def normalize_severity(value: str | None) -> str:
+    mapping = {"crit": "critical", "critical": "critical", "warn": "high", "warning": "high", "high": "high"}
+    return mapping.get(str(value or "").lower(), str(value or "").lower())
+
+
+def tokenize_text(text: str) -> set[str]:
+    return {
+        token
+        for token in re.split(r"[^a-zA-Z0-9]+", text.lower())
+        if len(token) >= 3 and token not in {"svc", "the", "and", "for", "with"}
+    }
+
+
+def cluster_text_tokens(cluster: dict[str, Any], alerts: list[dict[str, Any]]) -> set[str]:
+    ids = set(cluster.get("alert_ids", []))
+    text = " ".join(
+        f"{alert['service']} {alert['metric']} {alert.get('labels', {}).get('note', '')}"
+        for alert in alerts
+        if alert["id"] in ids
+    )
+    return tokenize_text(text)
+
+
+def tokenize_history(history_item: dict[str, Any]) -> set[str]:
+    text = " ".join(
+        [
+            " ".join(history_item.get("services_involved", [])),
+            str(history_item.get("root_cause_service", "")),
+            str(history_item.get("root_cause_class", "")),
+            str(history_item.get("summary", "")),
+            str(history_item.get("remediation", "")),
+        ]
+    )
+    return tokenize_text(text)
 
 
 def retrieve_similar_incidents(
@@ -158,6 +199,16 @@ def classify_root_cause(root: str, cluster: dict[str, Any], alerts: list[dict[st
     if "latency" in text and "search" in root:
         return "slow_query"
     return "other"
+
+
+def classify_from_retrieval(similar: list[dict[str, Any]], fallback_root: str, fallback_class: str) -> tuple[str, list[str]]:
+    if similar:
+        top = similar[0]
+        root_class = top.get("root_cause_class") or fallback_class
+        remediation = top.get("remediation")
+        if remediation:
+            return root_class, [remediation]
+    return fallback_class, suggest_actions(fallback_class, fallback_root)
 
 
 def suggest_actions(root_class: str, root_service: str) -> list[str]:
@@ -191,8 +242,10 @@ def run_rca(
     for cluster in clusters:
         ranked = rank_root_causes(cluster, alerts, graph)
         root, score = ranked[0]
-        root_class = classify_root_cause(root, cluster, alerts)
+        fallback_class = classify_root_cause(root, cluster, alerts)
+        cluster["text_tokens"] = sorted(cluster_text_tokens(cluster, alerts))
         similar = retrieve_similar_incidents(cluster, history)
+        root_class, actions = classify_from_retrieval(similar, root, fallback_class)
         confidence = round(min(0.95, 0.45 + score / 3), 4)
         results.append(
             {
@@ -201,7 +254,7 @@ def run_rca(
                 "root_cause": root,
                 "class": root_class,
                 "confidence": confidence,
-                "actions": suggest_actions(root_class, root),
+                "actions": actions,
                 "reasoning": (
                     f"{root} is ranked highest because it is earlier/lower in the dependency graph "
                     f"and appears central to services {', '.join(cluster['services'])}."
@@ -216,15 +269,18 @@ def run_rca(
 def main() -> None:
     base = Path(__file__).resolve().parent
     d1 = base.parent / "d1"
+    dataset_dir = base / "dataset"
+    if not dataset_dir.exists():
+        dataset_dir = base / "lab" / "dataset"
     cluster_summary = load_json(d1 / "results" / "cluster_summary.json")
-    alerts = load_jsonl(d1 / "lab" / "dataset" / "alerts_sample.jsonl")
-    graph = build_directed_graph(d1 / "lab" / "dataset" / "services.json")
-    history = load_json(base / "lab" / "dataset" / "incidents_history.json")["incidents"]
+    alerts = load_jsonl(dataset_dir / "alerts_sample.jsonl")
+    graph = build_directed_graph(dataset_dir / "services.json")
+    history = load_json(dataset_dir / "incidents_history.json")["incidents"]
     output = run_rca(cluster_summary["clusters"], alerts, graph, history)
     out_path = base / "results" / "rca_output.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps(output, ensure_ascii=False, indent=2))
+    print(json.dumps(output, ensure_ascii=True, indent=2))
 
 
 if __name__ == "__main__":

@@ -2,7 +2,9 @@
 
 ## Tóm tắt kết quả
 
-Em dùng output từ D1 (`cluster_summary.json`) làm input cho RCA. Cách làm chính là graph-based RCA: dựa vào service dependency graph, timestamp alert đầu tiên, số alert theo service, và một PageRank đơn giản trên graph. Em cũng thêm retrieval từ `incidents_history.json` để lấy incident tương tự, giống bước chuẩn bị context cho LLM.
+Em dùng output từ D1 (`cluster_summary.json`) làm input cho RCA. Dataset D2 em tải từ link official và lưu ở `dataset/`: `alerts_sample.jsonl`, `services.json`, và `incidents_history.json`. File history hiện tải về có 29 incidents.
+
+Cách làm chính của em gồm 2 phần. Phần đầu là graph + temporal scorer để chọn root cause candidate. Phần sau là retrieval/classifier kiểu kNN: lấy top-1 similar incident trong history để gán `class` và đề xuất `actions`. Em không gọi LLM thật vì assignment ghi không cần API key, default path là graph + retrieval.
 
 Output nằm ở:
 
@@ -10,40 +12,24 @@ Output nằm ở:
 results/rca_output.json
 ```
 
-Kết quả sau khi cập nhật dataset chính thức:
+Kết quả:
 
 | Cluster | Root cause | Class | Confidence | Method |
 | --- | --- | --- | ---: | --- |
 | `c-000-000` | `payment-svc` | `connection_pool_exhaustion` | 0.7508 | graph+retrieval |
-| `c-000-001` | `recommender-svc` | `other` | 0.7833 | graph+retrieval |
-| `c-000-002` | `search-svc` | `other` | 0.7833 | graph+retrieval |
+| `c-000-001` | `recommender-svc` | `batch_overlap` | 0.7833 | graph+retrieval |
+| `c-000-002` | `search-svc` | `n_plus_1` | 0.7833 | graph+retrieval |
 
 ## EOD Checkpoint
 
-### 1. Culprit vs victim
+### 1. Confidence top-1 cluster lớn nhất là bao nhiêu? Auto-rollback threshold chọn số nào?
 
-Trong cluster chính, em xem `payment-svc` là culprit và `checkout-svc` là victim. Lý do là graph có hướng `edge-lb -> checkout-svc -> payment-svc`, nghĩa là checkout phụ thuộc vào payment. Nếu payment bị nghẽn DB pool thì checkout sẽ bị latency/error theo. `edge-lb` cũng là victim vì nó nằm upstream của checkout.
+Cluster lớn nhất là `c-000-000`, root cause top-1 là `payment-svc`, confidence `0.7508`. Nếu phải set threshold để auto-rollback mà không cần SRE confirm, em sẽ chọn khoảng `0.90`. Lý do là 0.75 đủ để ưu tiên điều tra payment trước, nhưng chưa đủ an toàn để tự rollback production. Auto-rollback cần bằng chứng mạnh hơn: score cao, similar incident rất khớp, action ít rủi ro, và có rollback path rõ ràng.
 
-### 2. PageRank/top-3 cho cluster chính
+### 2. Variant classifier em chọn là gì? Chạy thực tế ra sao?
 
-Top-3 RCA candidate cho cluster chính:
+Em chọn variant A: rule/graph scorer + retrieval classifier, không dùng free/p paid LLM. Chạy thực tế ra class hợp lý cho cluster chính: `connection_pool_exhaustion`, action lấy từ incident tương tự `INC-2025-11-08`. Trade-off là retrieval-only ít linh hoạt hơn LLM nếu incident mới có wording lạ, nhưng nó ổn định, không tốn API key, dễ validate schema, và ít hallucinate hơn. Với bài lab hiện tại, em thấy retrieval-only đủ vì history đã có nhiều incident payment/search/recommender gần giống.
 
-| Rank | Service | Score |
-| ---: | --- | ---: |
-| 1 | `payment-svc` | 0.9025 |
-| 2 | `checkout-svc` | 0.6587 |
-| 3 | `cart-svc` | 0.6213 |
+### 3. Pipeline này gần product nào nhất trong industry landscape?
 
-Payment đứng đầu vì alert đầu tiên là `db_connection_pool_used_ratio`, service này nằm thấp hơn trong dependency path của checkout/edge, và các symptom sau đó giống cascade từ payment.
-
-### 3. Em có dùng Granger causality không?
-
-Em không dùng Granger causality trong code chính. Lý do là dataset hiện tại là alert events, không phải metric time-series đủ dài. Granger cần nhiều điểm dữ liệu liên tục và thường cần xử lý stationarity/differencing trước. Với bài này, graph + timestamp phù hợp hơn vì input chính là alert cluster.
-
-### 4. LLM có hallucinate không?
-
-Em không gọi LLM thật trong bài này, nhưng em có làm bước retrieval incident history để chuẩn bị context giống LLM-augmented RCA. Để guard hallucination, output root cause chỉ được lấy từ service nằm trong cluster. Nếu sau này gọi LLM thật, em sẽ validate JSON output: `root_cause` phải thuộc `cluster.services`, `class` phải nằm trong enum, confidence phải trong `[0,1]`, và action không được rỗng.
-
-### 5. Confidence 0.6 thì có auto-rollback không?
-
-Nếu confidence chỉ 0.6, em sẽ không auto-rollback ngay. Em sẽ dùng RCA output để ưu tiên điều tra service top-1 trước, nhưng production rollback cần SRE confirm. Auto-remediation chỉ nên áp dụng khi confidence cao, action ít rủi ro, và có guardrail rõ như rollback được revert lại hoặc chỉ scale tạm thời.
+Pipeline em làm gần Dynatrace Davis/BigPanda hơn là Causely. Lý do là em dựa nhiều vào service graph, alert clustering, incident history và ranking candidate, thay vì học causal graph đầy đủ từ time-series dài. Với domain GeekShop là e-commerce, alert volume cao và service map tương đối ổn định, hướng này hợp lý vì graph có thể giúp xử lý nhanh trong lúc on-call. Nếu service graph sai hoặc thay đổi liên tục, lúc đó nên bổ sung trace-derived graph hoặc causal/time-series method mạnh hơn.
