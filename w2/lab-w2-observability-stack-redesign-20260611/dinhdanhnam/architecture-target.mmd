@@ -1,0 +1,127 @@
+flowchart LR
+  %% Compact target-state diagram.
+  %% Blue = application owned by product teams
+  %% Green = OSS/self-hosted platform owned by platform team
+  %% Orange = SaaS
+  %% Gray = cold storage / archive
+  %% Yellow = human-facing query/response surfaces
+
+  subgraph APP["Application boundary: GeekShop services"]
+    direction LR
+    edge["edge-lb"]
+    auth["auth-svc"]
+    catalog["catalog-svc"]
+    search["search-svc"]
+    checkout["checkout-svc"]
+    cart["cart-svc"]
+    payment["payment-svc"]
+    inventory["inventory-svc"]
+    recommender["recommender-svc"]
+    notification["notification-svc"]
+    pdb[("payments-db")]
+    cdb[("catalog-db")]
+    redis[("cart-redis")]
+    kafka[("kafka-events")]
+    emit["All services emit\nmetrics, logs, traces"]
+
+    edge --> auth
+    edge --> catalog
+    edge --> search
+    edge --> checkout
+    checkout --> cart
+    checkout --> payment
+    checkout --> inventory
+    checkout -. kafka .-> notification
+    cart --> redis
+    cart --> catalog
+    payment --> pdb
+    catalog --> cdb
+    catalog --> recommender
+    recommender --> cdb
+    search --> cdb
+    inventory --> cdb
+    notification -. kafka .-> kafka
+    edge -. telemetry .-> emit
+    checkout -. telemetry .-> emit
+    payment -. telemetry .-> emit
+    catalog -. telemetry .-> emit
+  end
+
+  subgraph INGEST["OSS/self-hosted ingestion boundary"]
+    direction TB
+    sdk["OpenTelemetry SDKs\nmetrics + traces"]
+    fluent["Fluent Bit\nstructured logs"]
+    synthetic["Blackbox exporter + k6\nsynthetic checks"]
+    alloy["Grafana Alloy / OTel Collector\nredaction, tail sampling,\ncardinality guardrails"]
+
+    sdk --> alloy
+    fluent --> alloy
+    synthetic --> alloy
+  end
+
+  subgraph HOT["OSS/self-hosted hot observability stores"]
+    direction TB
+    vm["VictoriaMetrics\nmetrics hot tier: 13 months"]
+    loki["Loki\nlogs hot tier: 14 days"]
+    tempo["Tempo\ntraces hot tier: 15 days\nservice graph metrics"]
+    grafana["Grafana OSS HA\nprimary query UI, dashboards,\nSLO burn-rate views"]
+    alerting["Grafana Alerting + Alertmanager\nrules, grouping, inhibition"]
+    rca["Built in-house correlation worker\nservice graph + alert fingerprints\n+ incident tags"]
+
+    vm --> grafana
+    loki --> grafana
+    tempo --> grafana
+    vm --> alerting
+    loki --> alerting
+    tempo --> alerting
+    grafana --> rca
+    alerting --> rca
+  end
+
+  subgraph COLD["Cold / audit storage in company AWS account"]
+    direction LR
+    s3logs[("S3 log archive\n90 days, Parquet\nAthena searchable")]
+    s3traces[("S3 trace blocks\n30 days")]
+    decisions[("Incident decision store\nPostgres, 180 days")]
+  end
+
+  subgraph SAAS["SaaS boundary"]
+    direction TB
+    irm["Grafana Cloud IRM\npaging, schedules,\nincident timeline"]
+    status["Atlassian Statuspage\ncustomer status"]
+    irm --> status
+  end
+
+  subgraph HUMAN["Human-facing surfaces"]
+    direction TB
+    oncall["On-call engineer\nGrafana + IRM"]
+    audit["Security / audit users\nAthena + exported reports"]
+  end
+
+  emit -->|"OTLP metrics + traces"| sdk
+  emit -->|"stdout structured logs"| fluent
+
+  alloy -->|"metrics"| vm
+  alloy -->|"logs"| loki
+  alloy -->|"traces"| tempo
+  alloy -->|"filtered logs"| s3logs
+  tempo -->|"trace blocks"| s3traces
+
+  rca -->|"one grouped incident\n+ evidence links"| irm
+  irm -->|"timeline export"| decisions
+  oncall --> grafana
+  oncall --> irm
+  audit --> s3logs
+  audit --> decisions
+
+  classDef app fill:#cfe5ff,stroke:#2b5f91,color:#111;
+  classDef oss fill:#d9f2d9,stroke:#347a34,color:#111;
+  classDef saas fill:#ffd7a8,stroke:#a66000,color:#111;
+  classDef cold fill:#e6e6e6,stroke:#666,color:#111;
+  classDef human fill:#fff8c6,stroke:#8a7b00,color:#111;
+
+  class edge,auth,catalog,search,checkout,cart,payment,inventory,recommender,notification,pdb,cdb,redis,kafka,emit app;
+  class sdk,fluent,synthetic,alloy,vm,loki,tempo,grafana,alerting,rca oss;
+  class irm,status saas;
+  class s3logs,s3traces,decisions cold;
+  class oncall,audit human;

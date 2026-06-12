@@ -1,0 +1,3 @@
+# Evidence-Driven Remediation Engine
+
+Run from the lab root with Python and PyYAML available. Example: `python dinhdanhnam/engine.py decide --incident data-pack/eval/E01.json --history data-pack/incidents_history.json --actions dinhdanhnam/actions.yaml --audit dinhdanhnam/audit.jsonl`. To reproduce the submitted audit, delete `dinhdanhnam/audit.jsonl` and run the same command for `E01` through `E08`, then verify with `python data-pack/grade.py --audit dinhdanhnam/audit.jsonl --expected data-pack/eval/expected.json`. The engine is split into `features.py` for log/trace/metric extraction, `retrieval.py` for similarity and outcome-weighted voting, and `decision.py` for cost-aware action selection, OOD handling, and blast-radius gating.
