@@ -7,3 +7,7 @@ Thumbs.db
 knowledgecheck.md
 lessons.md
 w1/d3/assignment.html
+w3/d1-pack/data/
+w3/d1-pack/*.tmp.yaml
+w3/d1-pack/*.tmp.json
+w3/d1-pack/baseline.json

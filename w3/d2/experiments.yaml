@@ -1,0 +1,140 @@
+version: 1
+experiments:
+  - id: 1
+    name: payment_latency
+    fault_type: latency
+    target: payment-svc
+    hypothesis: "If payment-svc receives +500ms network delay for 60s, checkout latency and payment edge latency should breach anomaly thresholds within 45s, and RCA should identify payment-svc."
+    blast_radius:
+      environment: staging
+      target_instances: 1
+      traffic_percent: 10
+      duration_sec: 60
+    rollback:
+      automatic: true
+      command: "pumba netem --tc-image gaiadocker/iproute2 delete payment-svc"
+      max_rollback_sec: 30
+    measurement:
+      metrics: [payment_latency_p99, checkout_latency_p99, payment_error_rate]
+      capture_window: "t-5m to t+10m"
+      abort_conditions: ["checkout_success_rate < 90% for 30s"]
+    ground_truth:
+      expected_detected: true
+      expected_root_service: payment-svc
+
+  - id: 2
+    name: payment_packet_loss
+    fault_type: network_loss
+    target: payment-svc
+    hypothesis: "If payment-svc drops 30% packets, payment error rate should rise and the pipeline should classify payment-svc as the upstream root before checkout symptoms dominate."
+    blast_radius: {environment: staging, target_instances: 1, traffic_percent: 10, duration_sec: 60}
+    rollback: {automatic: true, command: "pumba netem delete payment-svc", max_rollback_sec: 30}
+    measurement:
+      metrics: [payment_error_rate, checkout_downstream_payment_error_rate, edge_5xx_rate]
+      capture_window: "t-5m to t+10m"
+      abort_conditions: ["edge_5xx_rate > 20% for 30s"]
+    ground_truth: {expected_detected: true, expected_root_service: payment-svc}
+
+  - id: 3
+    name: inventory_pod_kill
+    fault_type: availability
+    target: inventory-svc
+    hypothesis: "If one inventory-svc container is killed every 60s, availability alerts should fire and RCA should identify inventory-svc rather than checkout."
+    blast_radius: {environment: staging, target_instances: 1, traffic_percent: 10, duration_sec: 180}
+    rollback: {automatic: true, command: "docker compose up -d inventory-svc", max_rollback_sec: 60}
+    measurement:
+      metrics: [inventory_up, inventory_restart_count, checkout_inventory_error_rate]
+      capture_window: "t-5m to t+10m"
+      abort_conditions: ["inventory_up == 0 for 60s"]
+    ground_truth: {expected_detected: true, expected_root_service: inventory-svc}
+
+  - id: 4
+    name: api_gateway_cpu
+    fault_type: cpu_saturation
+    target: api-gateway
+    hypothesis: "If api-gateway CPU is stressed to 90%, latency should cascade across downstream calls and RCA should identify api-gateway as the shared upstream."
+    blast_radius: {environment: staging, target_instances: 1, traffic_percent: 10, duration_sec: 120}
+    rollback: {automatic: true, command: "pkill stress-ng || true", max_rollback_sec: 20}
+    measurement:
+      metrics: [api_gateway_cpu, api_gateway_latency_p99, downstream_latency_p99]
+      capture_window: "t-5m to t+10m"
+      abort_conditions: ["api_gateway_cpu > 95% for 60s"]
+    ground_truth: {expected_detected: true, expected_root_service: api-gateway}
+
+  - id: 5
+    name: payment_db_memory
+    fault_type: memory
+    target: payment-db
+    hypothesis: "If payment-db memory fills to 95%, connection-pool waits should rise in payment-svc and RCA should keep the root at payment-db."
+    blast_radius: {environment: staging, target_instances: 1, traffic_percent: 10, duration_sec: 120}
+    rollback: {automatic: true, command: "pkill stress-ng || true", max_rollback_sec: 30}
+    measurement:
+      metrics: [payment_db_memory_used, payment_conn_pool_wait_ms, payment_latency_p99]
+      capture_window: "t-5m to t+10m"
+      abort_conditions: ["payment_db_memory_used > 98% for 30s"]
+    ground_truth: {expected_detected: true, expected_root_service: payment-db}
+
+  - id: 6
+    name: auth_clock_skew
+    fault_type: time_skew
+    target: auth-svc
+    hypothesis: "If auth-svc clock jumps forward by 60s, JWT/certificate validation should fail and RCA should identify auth-svc as a lateral dependency."
+    blast_radius: {environment: staging, target_instances: 1, traffic_percent: 10, duration_sec: 60}
+    rollback: {automatic: true, command: "chronyc makestep || true", max_rollback_sec: 60}
+    measurement:
+      metrics: [auth_jwt_fail_rate, auth_clock_offset_sec, edge_401_rate]
+      capture_window: "t-5m to t+10m"
+      abort_conditions: ["auth_jwt_fail_rate > 30% for 30s"]
+    ground_truth: {expected_detected: true, expected_root_service: auth-svc}
+
+  - id: 7
+    name: log_collector_disk_fill
+    fault_type: disk_fill
+    target: log-collector
+    hypothesis: "If log-collector disk reaches 95%, meta-monitoring should detect ingestion lag even if user-facing services remain healthy."
+    blast_radius: {environment: staging, target_instances: 1, traffic_percent: 0, duration_sec: 120}
+    rollback: {automatic: true, command: "rm -f /tmp/chaos-fill-*", max_rollback_sec: 30}
+    measurement:
+      metrics: [log_collector_disk_used, log_ingestion_lag_sec, pipeline_input_rate]
+      capture_window: "t-5m to t+10m"
+      abort_conditions: ["log_ingestion_lag_sec > 300"]
+    ground_truth: {expected_detected: true, expected_root_service: log-collector}
+
+  - id: 8
+    name: frontend_api_partition
+    fault_type: network_partition
+    target: frontend-api-gateway
+    hypothesis: "If frontend is partitioned from api-gateway for 30s, all downstream calls should timeout and RCA should identify the edge/API boundary."
+    blast_radius: {environment: staging, target_instances: 1, traffic_percent: 10, duration_sec: 30}
+    rollback: {automatic: true, command: "iptables -F || true", max_rollback_sec: 20}
+    measurement:
+      metrics: [frontend_network_error_rate, api_gateway_request_rate, edge_timeout_rate]
+      capture_window: "t-5m to t+10m"
+      abort_conditions: ["frontend_network_error_rate > 40% for 30s"]
+    ground_truth: {expected_detected: true, expected_root_service: edge}
+
+  - id: 9
+    name: dns_slow_lookup
+    fault_type: dns_latency
+    target: dns-resolver
+    hypothesis: "If DNS lookup latency increases by 2s, intermittent request latency should rise and RCA should point to dns-resolver or the topology edge that uses it."
+    blast_radius: {environment: staging, target_instances: 1, traffic_percent: 10, duration_sec: 90}
+    rollback: {automatic: true, command: "toxiproxy-cli toxic remove dns latency || true", max_rollback_sec: 30}
+    measurement:
+      metrics: [dns_lookup_latency_ms, api_gateway_latency_p99, upstream_timeout_rate]
+      capture_window: "t-5m to t+10m"
+      abort_conditions: ["api_gateway_latency_p99 > 3000ms for 30s"]
+    ground_truth: {expected_detected: true, expected_root_service: dns-resolver}
+
+  - id: 10
+    name: checkout_retry_storm
+    fault_type: cascade_retry
+    target: checkout-svc
+    hypothesis: "If checkout-svc returns HTTP 500 for 20% of requests, retries should create noisy downstream symptoms; RCA must not choose checkout purely by alert count."
+    blast_radius: {environment: staging, target_instances: 1, traffic_percent: 10, duration_sec: 90}
+    rollback: {automatic: true, command: "toxiproxy-cli toxic remove checkout http_500 || true", max_rollback_sec: 30}
+    measurement:
+      metrics: [checkout_5xx_rate, retry_count, payment_request_rate, inventory_request_rate]
+      capture_window: "t-5m to t+10m"
+      abort_conditions: ["checkout_5xx_rate > 30% for 30s"]
+    ground_truth: {expected_detected: true, expected_root_service: payment-svc, must_not_root: checkout-svc}

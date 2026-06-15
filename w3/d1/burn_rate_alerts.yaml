@@ -1,0 +1,90 @@
+groups:
+  - name: frontend-slo
+    rules:
+      - alert: frontend_burn_rate_tier1
+        expr: |
+          (sum(rate(frontend_rum_fail_total[15m])) / sum(rate(frontend_rum_events_total[15m]))) / (1 - 0.985) >= 3
+          AND
+          (sum(rate(frontend_rum_fail_total[2m])) / sum(rate(frontend_rum_events_total[2m]))) / (1 - 0.985) >= 3
+        labels: {severity: page, tier: "1", service: frontend}
+        annotations:
+          summary: "Frontend SLO burn rate >= 3 over 15m and 2m"
+          runbook: "https://runbooks.example.com/frontend-slo"
+      - alert: frontend_burn_rate_tier2
+        expr: |
+          (sum(rate(frontend_rum_fail_total[1h])) / sum(rate(frontend_rum_events_total[1h]))) / (1 - 0.985) >= 2
+          AND
+          (sum(rate(frontend_rum_fail_total[5m])) / sum(rate(frontend_rum_events_total[5m]))) / (1 - 0.985) >= 2
+        labels: {severity: page, tier: "2", service: frontend}
+        annotations:
+          summary: "Frontend SLO burn rate >= 2 over 1h and 5m"
+          runbook: "https://runbooks.example.com/frontend-slo"
+      - alert: frontend_burn_rate_tier3
+        expr: |
+          (sum(rate(frontend_rum_fail_total[3d])) / sum(rate(frontend_rum_events_total[3d]))) / (1 - 0.985) >= 1
+          AND
+          (sum(rate(frontend_rum_fail_total[6h])) / sum(rate(frontend_rum_events_total[6h]))) / (1 - 0.985) >= 1
+        labels: {severity: ticket, tier: "3", service: frontend}
+        annotations:
+          summary: "Frontend SLO burn rate >= 1 over 3d and 6h"
+          runbook: "https://runbooks.example.com/frontend-slo"
+
+  - name: api-slo
+    rules:
+      - alert: api_burn_rate_tier1
+        expr: |
+          (sum(rate(http_requests_fail_total[15m])) / sum(rate(http_requests_total[15m]))) / (1 - 0.99) >= 3
+          AND
+          (sum(rate(http_requests_fail_total[2m])) / sum(rate(http_requests_total[2m]))) / (1 - 0.99) >= 3
+        labels: {severity: page, tier: "1", service: api}
+        annotations:
+          summary: "API SLO burn rate >= 3 over 15m and 2m"
+          runbook: "https://runbooks.example.com/api-slo"
+      - alert: api_burn_rate_tier2
+        expr: |
+          (sum(rate(http_requests_fail_total[1h])) / sum(rate(http_requests_total[1h]))) / (1 - 0.99) >= 2
+          AND
+          (sum(rate(http_requests_fail_total[5m])) / sum(rate(http_requests_total[5m]))) / (1 - 0.99) >= 2
+        labels: {severity: page, tier: "2", service: api}
+        annotations:
+          summary: "API SLO burn rate >= 2 over 1h and 5m"
+          runbook: "https://runbooks.example.com/api-slo"
+      - alert: api_burn_rate_tier3
+        expr: |
+          (sum(rate(http_requests_fail_total[3d])) / sum(rate(http_requests_total[3d]))) / (1 - 0.99) >= 1
+          AND
+          (sum(rate(http_requests_fail_total[6h])) / sum(rate(http_requests_total[6h]))) / (1 - 0.99) >= 1
+        labels: {severity: ticket, tier: "3", service: api}
+        annotations:
+          summary: "API SLO burn rate >= 1 over 3d and 6h"
+          runbook: "https://runbooks.example.com/api-slo"
+
+  - name: db-slo
+    rules:
+      - alert: db_burn_rate_tier1
+        expr: |
+          (sum(rate(db_query_fail_total[15m])) / sum(rate(db_query_events_total[15m]))) / (1 - 0.995) >= 3
+          AND
+          (sum(rate(db_query_fail_total[2m])) / sum(rate(db_query_events_total[2m]))) / (1 - 0.995) >= 3
+        labels: {severity: page, tier: "1", service: db}
+        annotations:
+          summary: "DB SLO burn rate >= 3 over 15m and 2m"
+          runbook: "https://runbooks.example.com/db-slo"
+      - alert: db_burn_rate_tier2
+        expr: |
+          (sum(rate(db_query_fail_total[1h])) / sum(rate(db_query_events_total[1h]))) / (1 - 0.995) >= 2
+          AND
+          (sum(rate(db_query_fail_total[5m])) / sum(rate(db_query_events_total[5m]))) / (1 - 0.995) >= 2
+        labels: {severity: page, tier: "2", service: db}
+        annotations:
+          summary: "DB SLO burn rate >= 2 over 1h and 5m"
+          runbook: "https://runbooks.example.com/db-slo"
+      - alert: db_burn_rate_tier3
+        expr: |
+          (sum(rate(db_query_fail_total[3d])) / sum(rate(db_query_events_total[3d]))) / (1 - 0.995) >= 1
+          AND
+          (sum(rate(db_query_fail_total[6h])) / sum(rate(db_query_events_total[6h]))) / (1 - 0.995) >= 1
+        labels: {severity: ticket, tier: "3", service: db}
+        annotations:
+          summary: "DB SLO burn rate >= 1 over 3d and 6h"
+          runbook: "https://runbooks.example.com/db-slo"

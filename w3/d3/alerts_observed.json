@@ -1,0 +1,9 @@
+{
+  "since": "2026-06-15T02:00:00Z",
+  "alerts": [
+    {"ts": "2026-06-15T02:02:05Z", "service": "api-gateway", "rule": "latency_p99_high", "severity": "page", "value": 2400, "threshold": 800},
+    {"ts": "2026-06-15T02:02:08Z", "service": "edge-waf", "rule": "cpu_saturation", "severity": "page", "value": 92, "threshold": 85},
+    {"ts": "2026-06-15T02:02:17Z", "service": "checkout-svc", "rule": "downstream_timeout_rate", "severity": "warn", "value": 0.18, "threshold": 0.05},
+    {"ts": "2026-06-15T02:02:30Z", "service": "payment-svc", "rule": "request_queue_depth", "severity": "warn", "value": 920, "threshold": 500}
+  ]
+}

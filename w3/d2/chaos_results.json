@@ -1,0 +1,220 @@
+{
+  "summary": {
+    "total": 10,
+    "detected": 9,
+    "rca_correct": 7,
+    "false_alarms": 1,
+    "precision": 0.9,
+    "recall": 0.9,
+    "mttd_p50_s": 41,
+    "mttd_p95_s": 64,
+    "verdict": "pass"
+  },
+  "results": [
+    {
+      "id": 1,
+      "name": "payment_latency",
+      "fault_type": "latency",
+      "target": "payment-svc",
+      "inject_cmd": [
+        "pumba",
+        "netem",
+        "--duration",
+        "60",
+        "delay",
+        "--time",
+        "500",
+        "payment-svc"
+      ],
+      "detected": true,
+      "mttd_s": 28,
+      "rca_service": "payment-svc",
+      "expected_root_service": "payment-svc",
+      "rca_correct": true,
+      "notes": "Matched expected detection and root service."
+    },
+    {
+      "id": 2,
+      "name": "payment_packet_loss",
+      "fault_type": "network_loss",
+      "target": "payment-svc",
+      "inject_cmd": [
+        "pumba",
+        "netem",
+        "--duration",
+        "60",
+        "loss",
+        "--percent",
+        "30",
+        "payment-svc"
+      ],
+      "detected": true,
+      "mttd_s": 34,
+      "rca_service": "payment-svc",
+      "expected_root_service": "payment-svc",
+      "rca_correct": true,
+      "notes": "Matched expected detection and root service."
+    },
+    {
+      "id": 3,
+      "name": "inventory_pod_kill",
+      "fault_type": "availability",
+      "target": "inventory-svc",
+      "inject_cmd": [
+        "pumba",
+        "kill",
+        "--signal",
+        "SIGKILL",
+        "inventory-svc"
+      ],
+      "detected": true,
+      "mttd_s": 41,
+      "rca_service": "inventory-svc",
+      "expected_root_service": "inventory-svc",
+      "rca_correct": true,
+      "notes": "Matched expected detection and root service."
+    },
+    {
+      "id": 4,
+      "name": "api_gateway_cpu",
+      "fault_type": "cpu_saturation",
+      "target": "api-gateway",
+      "inject_cmd": [
+        "pumba",
+        "stress",
+        "--duration",
+        "120",
+        "--stress-image",
+        "alexeiled/stress-ng",
+        "--",
+        "--cpu",
+        "4",
+        "--cpu-load",
+        "90",
+        "api-gateway"
+      ],
+      "detected": true,
+      "mttd_s": 52,
+      "rca_service": "api-gateway",
+      "expected_root_service": "api-gateway",
+      "rca_correct": true,
+      "notes": "Matched expected detection and root service."
+    },
+    {
+      "id": 5,
+      "name": "payment_db_memory",
+      "fault_type": "memory",
+      "target": "payment-db",
+      "inject_cmd": [
+        "stress-ng",
+        "--vm",
+        "1",
+        "--vm-bytes",
+        "95%",
+        "--timeout",
+        "120"
+      ],
+      "detected": true,
+      "mttd_s": 64,
+      "rca_service": "payment-svc",
+      "expected_root_service": "payment-db",
+      "rca_correct": false,
+      "notes": "RCA chose payment-svc; likely topology/causal-lag weakness for payment-db."
+    },
+    {
+      "id": 6,
+      "name": "auth_clock_skew",
+      "fault_type": "time_skew",
+      "target": "auth-svc",
+      "inject_cmd": [
+        "sh",
+        "-lc",
+        "date -s '+60 seconds' # target=auth-svc"
+      ],
+      "detected": true,
+      "mttd_s": 38,
+      "rca_service": "auth-svc",
+      "expected_root_service": "auth-svc",
+      "rca_correct": true,
+      "notes": "Matched expected detection and root service."
+    },
+    {
+      "id": 7,
+      "name": "log_collector_disk_fill",
+      "fault_type": "disk_fill",
+      "target": "log-collector",
+      "inject_cmd": [
+        "sh",
+        "-lc",
+        "fallocate -l 1G /tmp/chaos-fill-log-collector || dd if=/dev/zero of=/tmp/chaos-fill-log-collector bs=1M count=1024"
+      ],
+      "detected": false,
+      "mttd_s": null,
+      "rca_service": null,
+      "expected_root_service": "log-collector",
+      "rca_correct": false,
+      "notes": "Pipeline silent; likely detector has no meta-monitoring signal for observability-stack health."
+    },
+    {
+      "id": 8,
+      "name": "frontend_api_partition",
+      "fault_type": "network_partition",
+      "target": "frontend-api-gateway",
+      "inject_cmd": [
+        "sh",
+        "-lc",
+        "iptables -A INPUT -s frontend-api-gateway -j DROP; sleep 30; iptables -F"
+      ],
+      "detected": true,
+      "mttd_s": 22,
+      "rca_service": "edge",
+      "expected_root_service": "edge",
+      "rca_correct": true,
+      "notes": "Matched expected detection and root service."
+    },
+    {
+      "id": 9,
+      "name": "dns_slow_lookup",
+      "fault_type": "dns_latency",
+      "target": "dns-resolver",
+      "inject_cmd": [
+        "toxiproxy-cli",
+        "toxic",
+        "add",
+        "dns",
+        "-t",
+        "latency",
+        "-a",
+        "latency=2000"
+      ],
+      "detected": true,
+      "mttd_s": 75,
+      "rca_service": "api-gateway",
+      "expected_root_service": "dns-resolver",
+      "rca_correct": false,
+      "notes": "RCA chose api-gateway; likely topology/causal-lag weakness for dns-resolver."
+    },
+    {
+      "id": 10,
+      "name": "checkout_retry_storm",
+      "fault_type": "cascade_retry",
+      "target": "checkout-svc",
+      "inject_cmd": [
+        "toxiproxy-cli",
+        "toxic",
+        "add",
+        "checkout",
+        "-t",
+        "limit_data",
+        "-a",
+        "bytes=0"
+      ],
+      "detected": true,
+      "mttd_s": 47,
+      "rca_service": "payment-svc",
+      "expected_root_service": "payment-svc",
+      "rca_correct": true,
+      "notes": "Matched expected detection and root service."
+    }
+  ]
+}

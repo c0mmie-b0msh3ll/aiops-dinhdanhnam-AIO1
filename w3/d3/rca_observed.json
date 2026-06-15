@@ -1,0 +1,16 @@
+{
+  "window_start": "2026-06-15T02:00:00Z",
+  "window_end": "2026-06-15T02:10:00Z",
+  "root_service": "api-gateway",
+  "confidence": 0.58,
+  "secondary_candidates": [
+    {"service": "edge-waf", "confidence": 0.51, "evidence": ["edge CPU saturated before API latency", "recent WAF rule deployment"]},
+    {"service": "checkout-svc", "confidence": 0.22, "evidence": ["downstream timeout alerts only after API latency"]}
+  ],
+  "evidence": [
+    "api-gateway latency page alert fired at 2026-06-15T02:02:05Z",
+    "edge-waf CPU saturation started 53s earlier than API alert",
+    "correlator grouped four services in one incident"
+  ],
+  "gap": "RCA picked the loud gateway symptom over the earlier edge-WAF deploy and CPU evidence."
+}
