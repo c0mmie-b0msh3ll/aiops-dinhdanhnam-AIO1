@@ -60,6 +60,7 @@ def run_experiment(exp: dict[str, Any]) -> dict[str, Any]:
         "target": exp["target"],
         "inject_cmd": build_inject_cmd(exp),
         "detected": detected,
+        "mttd": mttd,
         "mttd_s": mttd,
         "rca_service": rca_service,
         "expected_root_service": expected,
@@ -80,7 +81,7 @@ def summarize(results: list[dict[str, Any]]) -> dict[str, Any]:
     detected = [r for r in results if r["detected"]]
     correct = [r for r in detected if r["rca_correct"]]
     false_alarms = 1
-    mttds = [r["mttd_s"] for r in detected if r["mttd_s"] is not None]
+    mttds = [r["mttd"] for r in detected if r["mttd"] is not None]
     precision = len(detected) / (len(detected) + false_alarms)
     recall = len(detected) / len(results)
     return {
@@ -111,7 +112,7 @@ def print_scoreboard(results: list[dict[str, Any]]) -> None:
     print("| # | name | detected | mttd | rca_service | rca_correct |")
     print("|---|------|----------|------|-------------|-------------|")
     for r in results:
-        print(f"| {r['id']} | {r['name']} | {'Y' if r['detected'] else 'N'} | {str(r['mttd_s']) + 's' if r['mttd_s'] is not None else '-'} | {r['rca_service'] or '-'} | {'Y' if r['rca_correct'] else 'N'} |")
+        print(f"| {r['id']} | {r['name']} | {'Y' if r['detected'] else 'N'} | {str(r['mttd']) + 's' if r['mttd'] is not None else '-'} | {r['rca_service'] or '-'} | {'Y' if r['rca_correct'] else 'N'} |")
     print("Gaps identified:")
     for r in results:
         if not r["detected"] or not r["rca_correct"]:
@@ -121,8 +122,8 @@ def print_scoreboard(results: list[dict[str, Any]]) -> None:
 def main() -> int:
     experiments = load_experiments(Path("experiments.yaml"))
     results = [run_experiment(exp) for exp in experiments]
-    summary = summarize(results)
-    Path("chaos_results.json").write_text(json.dumps({"summary": summary, "results": results}, indent=2), encoding="utf-8")
+    Path("chaos_results.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
+    Path("chaos_summary.json").write_text(json.dumps(summarize(results), indent=2), encoding="utf-8")
     print_scoreboard(results)
     return 0
 

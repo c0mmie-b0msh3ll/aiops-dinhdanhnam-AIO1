@@ -6,7 +6,7 @@
 - Pipeline version + commit hash: W1/W2-style detector, correlator, and RCA simulation, commit pending.
 - Baseline window: 2026-06-15T09:00:00Z -> 2026-06-15T09:05:00Z.
 - Total experiments run: 10.
-- Execution mode: experiment catalog and runner are executable locally. The original `w3-d2-pack.zip` URL returned 404 during setup, so this run records deterministic observations against the required experiment catalog rather than a Docker stack.
+- Execution mode: experiment catalog and runner are executable locally. The refreshed `w3-d2-pack.zip` is a starter pack and does not ship the full 10-service Docker stack, so this run records deterministic observations against the required experiment catalog and the starter-pack scoreboard schema.
 
 ## 2. Results Table
 

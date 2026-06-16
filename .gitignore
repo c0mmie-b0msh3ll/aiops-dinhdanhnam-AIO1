@@ -11,3 +11,5 @@ w3/d1-pack/data/
 w3/d1-pack/*.tmp.yaml
 w3/d1-pack/*.tmp.json
 w3/d1-pack/baseline.json
+w3/d2-pack/
+w3/d3-pack/

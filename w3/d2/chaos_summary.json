@@ -1,0 +1,11 @@
+{
+  "total": 10,
+  "detected": 9,
+  "rca_correct": 7,
+  "false_alarms": 1,
+  "precision": 0.9,
+  "recall": 0.9,
+  "mttd_p50_s": 41,
+  "mttd_p95_s": 64,
+  "verdict": "pass"
+}
