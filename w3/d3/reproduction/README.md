@@ -19,10 +19,10 @@ curl http://localhost:8888/healthz   # responds < 50ms while regex is OFF
 ## Inject
 ```bash
 bash inject.sh              # flips middleware to "active" — every request now pinned to CPU
-time curl --max-time 30 "http://localhost:8888/?q=$(printf '%.0sxxxxx' {1..30})="
+time curl --max-time 30 "http://localhost:8888/?q=xxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
-Expected: request takes 5-15 seconds to respond (or times out). Other requests
+Expected: request takes about 1-3 seconds to respond instead of a few milliseconds. Other requests
 queue behind it. Service appears alive (no crash) but unresponsive.
 
 ## What to observe in your AIOps pipeline

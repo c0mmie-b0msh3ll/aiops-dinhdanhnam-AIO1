@@ -4,14 +4,16 @@ import re
 
 from fastapi import FastAPI, Request
 
-EVIL = re.compile(r'(?:(?:"|\d|.*)+(?:.*=.*))')
+EVIL = re.compile(r"^(x+)+$")
 app = FastAPI()
 
 
 @app.middleware("http")
 async def waf(request: Request, call_next):
     if os.environ.get("EVIL_REGEX_ACTIVE") == "1":
-        EVIL.match(str(request.url.query))
+        candidate = request.query_params.get("q", "")
+        if candidate:
+            EVIL.match(candidate[:26] + "!")
     return await call_next(request)
 
 
