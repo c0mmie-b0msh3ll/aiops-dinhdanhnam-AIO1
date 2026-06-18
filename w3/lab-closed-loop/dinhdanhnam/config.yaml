@@ -3,24 +3,32 @@
 alertmanager_url: "http://localhost:9093"
 prometheus_url: "http://localhost:9090"
 poll_interval_seconds: 15
-runbook_timeout_seconds: 30
+runbook_timeout_seconds: 150
+verify_timeout_seconds: 120
+
+managed_services:
+  - frontend
+  - api-gateway
+  - payment-svc
+  - inventory-svc
+  - checkout-svc
 
 # Relative path from this config file to the lab baseline JSON.
 baseline_path: "../data-pack/data/baseline.json"
 
 # Rule engine: alertname -> script path, relative to this config file.
 runbook_map:
-  HighLatency: "runbooks/restart_service.sh"
-  HighErrorRate: "runbooks/clear_cache.sh"
-  InstanceDown: "runbooks/restart_service.sh"
-  MultiStepDeploy: "runbooks/multi_step_deploy.sh"
+  HighLatency: "runbooks/restart_service.ps1"
+  HighErrorRate: "runbooks/clear_cache.ps1"
+  InstanceDown: "runbooks/restart_service.ps1"
+  MultiStepDeploy: "runbooks/multi_step_deploy.ps1"
 
 # Rollback map: alertname -> rollback script.
 rollback_map:
-  HighLatency: "runbooks/restart_service.sh"
-  HighErrorRate: "runbooks/restart_service.sh"
-  InstanceDown: "runbooks/restart_service.sh"
-  MultiStepDeploy: "runbooks/multi_step_deploy.sh --rollback-a"
+  HighLatency: "runbooks/restart_service.ps1"
+  HighErrorRate: "runbooks/restart_service.ps1"
+  InstanceDown: "runbooks/restart_service.ps1"
+  MultiStepDeploy: "runbooks/multi_step_deploy.ps1 -RollbackA"
 
 blast_radius:
   max_actions_per_minute: 3
@@ -32,20 +40,20 @@ circuit_breaker:
 
 # Explicit registry prevents invalid or hallucinated runbook paths from running.
 runbook_registry:
-  - "runbooks/restart_service.sh"
-  - "runbooks/clear_cache.sh"
-  - "runbooks/scale_replicas.sh"
-  - "runbooks/multi_step_deploy.sh"
+  - "runbooks/restart_service.ps1"
+  - "runbooks/clear_cache.ps1"
+  - "runbooks/scale_replicas.ps1"
+  - "runbooks/multi_step_deploy.ps1"
 
 # Optional stress mapping. The runbook file intentionally supports dry-run and
 # step failure so the transactional rollback path can be demonstrated.
 multi_step_map:
   MultiStepDeploy:
-    - "runbooks/multi_step_deploy.sh --step-a"
-    - "runbooks/multi_step_deploy.sh --step-b"
-    - "runbooks/multi_step_deploy.sh --step-c"
+    - "runbooks/multi_step_deploy.ps1 -StepA"
+    - "runbooks/multi_step_deploy.ps1 -StepB"
+    - "runbooks/multi_step_deploy.ps1 -StepC"
 multi_step_rollback_map:
   MultiStepDeploy:
-    - "runbooks/multi_step_deploy.sh --rollback-a"
-    - "runbooks/multi_step_deploy.sh --rollback-b"
-    - "runbooks/multi_step_deploy.sh --rollback-c"
+    - "runbooks/multi_step_deploy.ps1 -RollbackA"
+    - "runbooks/multi_step_deploy.ps1 -RollbackB"
+    - "runbooks/multi_step_deploy.ps1 -RollbackC"

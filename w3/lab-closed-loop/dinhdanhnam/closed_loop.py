@@ -94,13 +94,30 @@ def bash_executable() -> str:
     return shutil.which("bash") or shutil.which("wsl") or "/bin/bash"
 
 
+def powershell_executable() -> str:
+    return shutil.which("pwsh") or shutil.which("powershell") or "powershell"
+
+
 def run_runbook(script: str, service: str, dry_run: bool, timeout_s: int = 30, cfg: dict | None = None) -> bool:
     """Execute runbook script. Returns True on exit code 0."""
     parts = shlex.split(script)
     script_path = resolve_script(parts[0], cfg)
-    cmd = [bash_executable(), script_path, "--service", service, *parts[1:]]
+    if script_path.lower().endswith(".ps1"):
+        cmd = [
+            powershell_executable(),
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            script_path,
+            "-Service",
+            service,
+            *parts[1:],
+        ]
+    else:
+        cmd = [bash_executable(), script_path, "--service", service, *parts[1:]]
     if dry_run:
-        cmd.append("--dry-run")
+        cmd.append("-DryRun" if script_path.lower().endswith(".ps1") else "--dry-run")
     log.info("RUNBOOK_EXEC", script=script, resolved_script=script_path, service=service, dry_run=dry_run)
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_s)
@@ -175,6 +192,11 @@ def process_alert(
 
     log.info("ALERT_DETECTED", alertname=alertname, service=service,
              severity=alert.get("labels", {}).get("severity", ""))
+
+    managed_services = set(cfg.get("managed_services", []))
+    if managed_services and service not in managed_services:
+        log.warning("UNMANAGED_SERVICE_SKIP", alertname=alertname, service=service)
+        return
 
     # 1. Decide — map alert → runbook
     runbook = cfg["runbook_map"].get(alertname)
@@ -268,7 +290,7 @@ def _process_alert_locked(
         prometheus_url=cfg["prometheus_url"],
         service=service,
         baseline=baseline,
-        timeout_s=t["verify_timeout_seconds"],
+        timeout_s=cfg.get("verify_timeout_seconds", t["verify_timeout_seconds"]),
         poll_interval_s=t["verify_poll_interval_seconds"],
         min_samples=t["verify_min_samples"],
     )

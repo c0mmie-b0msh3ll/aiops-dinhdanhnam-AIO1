@@ -17,7 +17,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-EXPERIMENT_NAME = "anomaly-detection"
+EXPERIMENT_NAME = os.environ.get("AIOPS_EXPERIMENT_NAME", "anomaly-detection")
 MODEL_NAME = "anomaly-detector"
 FEATURES = ["latency_p99", "error_rate", "rps"]
 

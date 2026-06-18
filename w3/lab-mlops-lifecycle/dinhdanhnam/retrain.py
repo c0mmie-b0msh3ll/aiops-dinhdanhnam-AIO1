@@ -39,7 +39,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from drift_detector import detect_drift, log_to_mlflow  # noqa: E402
 
 MODEL_NAME = "anomaly-detector"
-EXPERIMENT_NAME = "anomaly-detection"
+EXPERIMENT_NAME = os.environ.get("AIOPS_EXPERIMENT_NAME", "anomaly-detection")
 FEATURES = ["latency_p99", "error_rate", "rps"]
 AUDIT_LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "audit_log.jsonl")
 POST_DEPLOY_CYCLES = 24          # simulate 24h post-deploy monitoring
@@ -174,8 +174,8 @@ def post_deploy_monitor(
         tp = int(((y_pred == 1) & (y_true == 1)).sum())
         fp = int(((y_pred == 1) & (y_true == 0)).sum())
         fn = int(((y_pred == 0) & (y_true == 1)).sum())
-        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        precision = tp / (tp + fp) if (tp + fp) > 0 else (1.0 if y_true.sum() == 0 else 0.0)
+        recall = tp / (tp + fn) if (tp + fn) > 0 else (1.0 if y_true.sum() == 0 else 0.0)
 
         print(f"[post_deploy_monitor] Cycle {cycle:02d}/{cycles} — precision: {precision:.4f}  recall: {recall:.4f}")
         append_audit("post_deploy_cycle", {"cycle": cycle, "precision": precision, "recall": recall, "v2": v2_version})
@@ -274,8 +274,8 @@ def main():
             tp = int(((y_pred == 1) & (y_true == 1)).sum())
             fp = int(((y_pred == 1) & (y_true == 0)).sum())
             fn = int(((y_pred == 0) & (y_true == 1)).sum())
-            prec_v2 = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-            rec_v2 = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            prec_v2 = tp / (tp + fp) if (tp + fp) > 0 else (1.0 if y_true.sum() == 0 else 0.0)
+            rec_v2 = tp / (tp + fn) if (tp + fn) > 0 else (1.0 if y_true.sum() == 0 else 0.0)
             print(f"[retrain] Holdout validation — v2 precision: {prec_v2:.4f}  recall: {rec_v2:.4f}")
             append_audit("holdout_validation", {"v2_precision": prec_v2, "v2_recall": rec_v2})
 

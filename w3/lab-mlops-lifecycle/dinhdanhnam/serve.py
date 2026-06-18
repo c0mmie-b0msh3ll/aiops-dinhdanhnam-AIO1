@@ -158,7 +158,8 @@ def main():
     parser.add_argument("--reload-on-start", action="store_true", default=False)
     args = parser.parse_args()
 
-    uvicorn.run("serve:app", host=args.host, port=args.port, reload=args.reload_on_start)
+    target = "serve:app" if args.reload_on_start else app
+    uvicorn.run(target, host=args.host, port=args.port, reload=args.reload_on_start)
 
 
 if __name__ == "__main__":

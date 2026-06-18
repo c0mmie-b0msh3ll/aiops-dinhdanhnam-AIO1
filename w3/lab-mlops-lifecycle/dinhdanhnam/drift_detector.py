@@ -37,8 +37,13 @@ from typing import Optional
 
 import mlflow
 import pandas as pd
-from evidently.metric_preset import DataDriftPreset
-from evidently.report import Report
+
+try:
+    from evidently.metric_preset import DataDriftPreset
+    from evidently.report import Report
+except ModuleNotFoundError:
+    DataDriftPreset = None
+    Report = None
 
 FEATURES = ["latency_p99", "error_rate", "rps"]
 DEFAULT_THRESHOLD = 0.15
@@ -77,27 +82,53 @@ def detect_drift(
     ref = reference_df[FEATURES].copy()
     cur = current_df[FEATURES].copy()
 
-    report = Report(metrics=[DataDriftPreset()])
-    report.run(reference_data=ref, current_data=cur)
-
-    result_dict = report.as_dict()
-    drift_metrics = result_dict["metrics"][0]["result"]
-
-    # DataDriftPreset result structure
-    share_drifted = drift_metrics.get("share_of_drifted_columns", 0.0)
-    per_feature = drift_metrics.get("drift_by_columns", {})
-    drifted_features = [
-        feat for feat, info in per_feature.items()
-        if info.get("drift_detected", False)
-    ]
-
-    # Save HTML report
     os.makedirs(REPORT_DIR, exist_ok=True)
     ts = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
     label = f"-{report_label}" if report_label else ""
     report_filename = f"drift-report{label}-{ts}.html"
     report_path = os.path.join(REPORT_DIR, report_filename)
-    report.save_html(report_path)
+
+    if Report is not None and DataDriftPreset is not None:
+        report = Report(metrics=[DataDriftPreset()])
+        report.run(reference_data=ref, current_data=cur)
+        result_dict = report.as_dict()
+        drift_metrics = result_dict["metrics"][0]["result"]
+        share_drifted = drift_metrics.get("share_of_drifted_columns", 0.0)
+        per_feature = drift_metrics.get("drift_by_columns", {})
+        drifted_features = [
+            feat for feat, info in per_feature.items()
+            if info.get("drift_detected", False)
+        ]
+        report.save_html(report_path)
+    else:
+        # Evidently's Python API changed in newer releases. This fallback keeps
+        # the lab runnable on Windows while preserving the same score contract:
+        # score = fraction of monitored features that drifted.
+        drifted_features = []
+        rows = []
+        for feat in FEATURES:
+            ref_mean = float(ref[feat].mean())
+            cur_mean = float(cur[feat].mean())
+            ref_std = float(ref[feat].std()) or 1.0
+            z_delta = abs(cur_mean - ref_mean) / ref_std
+            is_feature_drift = z_delta > 0.5
+            if is_feature_drift:
+                drifted_features.append(feat)
+            rows.append((feat, ref_mean, cur_mean, z_delta, is_feature_drift))
+        share_drifted = len(drifted_features) / len(FEATURES)
+        table_rows = "\n".join(
+            f"<tr><td>{feat}</td><td>{ref_mean:.4f}</td><td>{cur_mean:.4f}</td><td>{z_delta:.4f}</td><td>{is_drift}</td></tr>"
+            for feat, ref_mean, cur_mean, z_delta, is_drift in rows
+        )
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write(
+                "<html><body><h1>Fallback Drift Report</h1>"
+                "<p>Evidently legacy DataDriftPreset API was unavailable; "
+                "this report uses standardized mean shift per feature.</p>"
+                "<table border='1'><tr><th>feature</th><th>reference_mean</th>"
+                "<th>current_mean</th><th>abs_delta_in_ref_std</th><th>drift</th></tr>"
+                f"{table_rows}</table></body></html>"
+            )
 
     return DriftResult(
         score=float(share_drifted),
@@ -145,8 +176,8 @@ def check_performance_drift(
     fp = int(((y_pred == 1) & (y_true == 0)).sum())
     fn = int(((y_pred == 0) & (y_true == 1)).sum())
 
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    precision = tp / (tp + fp) if (tp + fp) > 0 else (1.0 if y_true.sum() == 0 else 0.0)
+    recall = tp / (tp + fn) if (tp + fn) > 0 else (1.0 if y_true.sum() == 0 else 0.0)
     is_degraded = precision < perf_threshold
 
     return precision, recall, is_degraded

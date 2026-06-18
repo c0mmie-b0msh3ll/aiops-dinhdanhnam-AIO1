@@ -1,16 +1,23 @@
 # MLOps Lifecycle: Anomaly Detector
 
-Start the stack, train v1, serve it, detect drift, then retrain and promote a staging model:
+Windows PowerShell quick path using local MLflow fallback:
 
-```bash
+```powershell
 cd w3/lab-mlops-lifecycle
-bash data-pack/scripts/start_stack.sh
-cd dinhdanhnam
-export MLFLOW_TRACKING_URI=http://localhost:5000
-uv run python pipeline.py --data ../data-pack/data/baseline.csv
-uv run python serve.py --host 0.0.0.0 --port 8000
-uv run python drift_detector.py --reference ../data-pack/data/baseline.csv --current ../data-pack/data/drifted.csv --threshold 0.15 --check-mode combined --labeled-current ../data-pack/data/drifted.csv --model-uri models:/anomaly-detector@production
-uv run python retrain.py --reference ../data-pack/data/baseline.csv --current ../data-pack/data/drifted.csv --holdout ../data-pack/data/holdout.csv --post-deploy-eval ../data-pack/data/post_deploy_eval.csv
+powershell -NoProfile -ExecutionPolicy Bypass -File dinhdanhnam/scripts/Start-LocalMlflow.ps1 -Port 5052
+```
+
+In a second terminal:
+
+```powershell
+cd w3/lab-mlops-lifecycle/dinhdanhnam
+$env:MLFLOW_TRACKING_URI="http://localhost:5052"
+$env:PYTHONIOENCODING="utf-8"
+$env:AIOPS_EXPERIMENT_NAME="anomaly-detection-windows"
+python pipeline.py --data ..\data-pack\data\baseline.csv
+python serve.py --host 127.0.0.1 --port 8000
 ```
 
 `pipeline.py` registers `anomaly-detector@production`, `serve.py` exposes `/predict`, `/health/active-version`, and `/reload`, `drift_detector.py` writes HTML reports to `outputs/drift_reports`, and `retrain.py` writes lifecycle audit events to `outputs/audit_log.jsonl`.
+
+See `../../WINDOWS_STEP_BY_STEP.md` for the full train, drift, retrain, and post-deploy monitor walkthrough.
