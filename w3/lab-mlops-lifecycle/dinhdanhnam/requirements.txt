@@ -1,0 +1,10 @@
+evidently
+fastapi
+mlflow
+numpy
+pandas
+prometheus_client
+pydantic
+requests
+scikit-learn
+uvicorn

@@ -1,0 +1,51 @@
+# Orchestrator configuration. closed_loop.py reads this at startup.
+
+alertmanager_url: "http://localhost:9093"
+prometheus_url: "http://localhost:9090"
+poll_interval_seconds: 15
+runbook_timeout_seconds: 30
+
+# Relative path from this config file to the lab baseline JSON.
+baseline_path: "../data-pack/data/baseline.json"
+
+# Rule engine: alertname -> script path, relative to this config file.
+runbook_map:
+  HighLatency: "runbooks/restart_service.sh"
+  HighErrorRate: "runbooks/clear_cache.sh"
+  InstanceDown: "runbooks/restart_service.sh"
+  MultiStepDeploy: "runbooks/multi_step_deploy.sh"
+
+# Rollback map: alertname -> rollback script.
+rollback_map:
+  HighLatency: "runbooks/restart_service.sh"
+  HighErrorRate: "runbooks/restart_service.sh"
+  InstanceDown: "runbooks/restart_service.sh"
+  MultiStepDeploy: "runbooks/multi_step_deploy.sh --rollback-a"
+
+blast_radius:
+  max_actions_per_minute: 3
+  max_restarts_per_service_per_hour: 5
+
+circuit_breaker:
+  consecutive_failure_threshold: 3
+  reset_mode: manual
+
+# Explicit registry prevents invalid or hallucinated runbook paths from running.
+runbook_registry:
+  - "runbooks/restart_service.sh"
+  - "runbooks/clear_cache.sh"
+  - "runbooks/scale_replicas.sh"
+  - "runbooks/multi_step_deploy.sh"
+
+# Optional stress mapping. The runbook file intentionally supports dry-run and
+# step failure so the transactional rollback path can be demonstrated.
+multi_step_map:
+  MultiStepDeploy:
+    - "runbooks/multi_step_deploy.sh --step-a"
+    - "runbooks/multi_step_deploy.sh --step-b"
+    - "runbooks/multi_step_deploy.sh --step-c"
+multi_step_rollback_map:
+  MultiStepDeploy:
+    - "runbooks/multi_step_deploy.sh --rollback-a"
+    - "runbooks/multi_step_deploy.sh --rollback-b"
+    - "runbooks/multi_step_deploy.sh --rollback-c"
