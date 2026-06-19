@@ -3,14 +3,14 @@
 Windows PowerShell quick path using local MLflow fallback:
 
 ```powershell
-cd w3/lab-mlops-lifecycle
+cd w3/lab/lab-mlops-lifecycle
 powershell -NoProfile -ExecutionPolicy Bypass -File dinhdanhnam/scripts/Start-LocalMlflow.ps1 -Port 5052
 ```
 
 In a second terminal:
 
 ```powershell
-cd w3/lab-mlops-lifecycle/dinhdanhnam
+cd w3/lab/lab-mlops-lifecycle/dinhdanhnam
 $env:MLFLOW_TRACKING_URI="http://localhost:5052"
 $env:PYTHONIOENCODING="utf-8"
 $env:AIOPS_EXPERIMENT_NAME="anomaly-detection-windows"

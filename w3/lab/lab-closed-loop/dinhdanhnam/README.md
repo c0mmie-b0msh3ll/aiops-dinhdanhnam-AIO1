@@ -3,7 +3,7 @@
 Run from the lab root on Windows PowerShell:
 
 ```powershell
-cd w3/lab-closed-loop
+cd w3/lab/lab-closed-loop
 powershell -NoProfile -ExecutionPolicy Bypass -File dinhdanhnam/scripts/Start-Stack.ps1
 cd dinhdanhnam
 python closed_loop.py --config config.yaml
