@@ -19,7 +19,7 @@ Alertmanager alert -> decide runbook -> dry-run -> execute -> verify in Promethe
 The important file to read first is:
 
 ```text
-w3/lab/lab-closed-loop/dinhdanhnam/closed_loop.py
+w3/labs/lab-closed-loop/dinhdanhnam/closed_loop.py
 ```
 
 The main logic is:
@@ -38,15 +38,15 @@ The main logic is:
 Bash scripts were replaced/wrapped with PowerShell scripts:
 
 ```text
-w3/lab/lab-closed-loop/dinhdanhnam/scripts/Start-Stack.ps1
-w3/lab/lab-closed-loop/dinhdanhnam/scripts/Stop-Stack.ps1
-w3/lab/lab-closed-loop/dinhdanhnam/scripts/Invoke-Fault.ps1
-w3/lab/lab-closed-loop/dinhdanhnam/scripts/Invoke-Traffic.ps1
+w3/labs/lab-closed-loop/dinhdanhnam/scripts/Start-Stack.ps1
+w3/labs/lab-closed-loop/dinhdanhnam/scripts/Stop-Stack.ps1
+w3/labs/lab-closed-loop/dinhdanhnam/scripts/Invoke-Fault.ps1
+w3/labs/lab-closed-loop/dinhdanhnam/scripts/Invoke-Traffic.ps1
 
-w3/lab/lab-closed-loop/dinhdanhnam/runbooks/restart_service.ps1
-w3/lab/lab-closed-loop/dinhdanhnam/runbooks/clear_cache.ps1
-w3/lab/lab-closed-loop/dinhdanhnam/runbooks/scale_replicas.ps1
-w3/lab/lab-closed-loop/dinhdanhnam/runbooks/multi_step_deploy.ps1
+w3/labs/lab-closed-loop/dinhdanhnam/runbooks/restart_service.ps1
+w3/labs/lab-closed-loop/dinhdanhnam/runbooks/clear_cache.ps1
+w3/labs/lab-closed-loop/dinhdanhnam/runbooks/scale_replicas.ps1
+w3/labs/lab-closed-loop/dinhdanhnam/runbooks/multi_step_deploy.ps1
 ```
 
 `closed_loop.py` now detects `.ps1` runbooks and calls PowerShell with:
@@ -58,13 +58,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File <runbook.ps1>
 ### Step 1: Install Python deps
 
 ```powershell
-python -m pip install -r w3/lab/lab-closed-loop/dinhdanhnam/requirements.txt
+python -m pip install -r w3/labs/lab-closed-loop/dinhdanhnam/requirements.txt
 ```
 
 ### Step 2: Start the stack
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File w3/lab/lab-closed-loop/dinhdanhnam/scripts/Start-Stack.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File w3/labs/lab-closed-loop/dinhdanhnam/scripts/Start-Stack.ps1
 ```
 
 Expected URLs:
@@ -80,13 +80,13 @@ Grafana      http://localhost:3000
 Generate normal traffic:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File w3/lab/lab-closed-loop/dinhdanhnam/scripts/Invoke-Traffic.ps1 -Service payment-svc -DurationSeconds 30
+powershell -NoProfile -ExecutionPolicy Bypass -File w3/labs/lab-closed-loop/dinhdanhnam/scripts/Invoke-Traffic.ps1 -Service payment-svc -DurationSeconds 30
 ```
 
 Inject Windows-compatible latency:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File w3/lab/lab-closed-loop/dinhdanhnam/scripts/Invoke-Fault.ps1 latency payment-svc 900ms
+powershell -NoProfile -ExecutionPolicy Bypass -File w3/labs/lab-closed-loop/dinhdanhnam/scripts/Invoke-Fault.ps1 latency payment-svc 900ms
 ```
 
 This does not use Linux `tc/nsenter`. Instead, it replaces the container with a slow container using the same service name, port, and Docker network alias. That makes Prometheus and Alertmanager see the same kind of latency symptom.
@@ -94,7 +94,7 @@ This does not use Linux `tc/nsenter`. Instead, it replaces the container with a 
 Restore the service:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File w3/lab/lab-closed-loop/dinhdanhnam/runbooks/restart_service.ps1 -Service payment-svc
+powershell -NoProfile -ExecutionPolicy Bypass -File w3/labs/lab-closed-loop/dinhdanhnam/runbooks/restart_service.ps1 -Service payment-svc
 ```
 
 ### Step 4: Run the orchestrator
@@ -102,7 +102,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File w3/lab/lab-closed-loop/dinhd
 Open a terminal:
 
 ```powershell
-cd w3/lab/lab-closed-loop/dinhdanhnam
+cd w3/labs/lab-closed-loop/dinhdanhnam
 python closed_loop.py --config config.yaml
 ```
 
@@ -110,8 +110,8 @@ Open another terminal and run traffic/fault:
 
 ```powershell
 cd D:\Study\Home_work\xBrain\aiops-dinhdanhnam-AIO1
-powershell -NoProfile -ExecutionPolicy Bypass -File w3/lab/lab-closed-loop/dinhdanhnam/scripts/Invoke-Traffic.ps1 -Service payment-svc -DurationSeconds 240 -IntervalMilliseconds 200
-powershell -NoProfile -ExecutionPolicy Bypass -File w3/lab/lab-closed-loop/dinhdanhnam/scripts/Invoke-Fault.ps1 latency payment-svc 900ms
+powershell -NoProfile -ExecutionPolicy Bypass -File w3/labs/lab-closed-loop/dinhdanhnam/scripts/Invoke-Traffic.ps1 -Service payment-svc -DurationSeconds 240 -IntervalMilliseconds 200
+powershell -NoProfile -ExecutionPolicy Bypass -File w3/labs/lab-closed-loop/dinhdanhnam/scripts/Invoke-Fault.ps1 latency payment-svc 900ms
 ```
 
 Expected orchestrator events:
@@ -152,19 +152,19 @@ train v1 -> register @production -> serve API -> detect drift -> train v2 -> reg
 Read these files in this order:
 
 ```text
-w3/lab/lab-mlops-lifecycle/dinhdanhnam/pipeline.py
-w3/lab/lab-mlops-lifecycle/dinhdanhnam/serve.py
-w3/lab/lab-mlops-lifecycle/dinhdanhnam/drift_detector.py
-w3/lab/lab-mlops-lifecycle/dinhdanhnam/retrain.py
+w3/labs/lab-mlops-lifecycle/dinhdanhnam/pipeline.py
+w3/labs/lab-mlops-lifecycle/dinhdanhnam/serve.py
+w3/labs/lab-mlops-lifecycle/dinhdanhnam/drift_detector.py
+w3/labs/lab-mlops-lifecycle/dinhdanhnam/retrain.py
 ```
 
 ### Windows scripts added
 
 ```text
-w3/lab/lab-mlops-lifecycle/dinhdanhnam/scripts/Start-Stack.ps1
-w3/lab/lab-mlops-lifecycle/dinhdanhnam/scripts/Stop-Stack.ps1
-w3/lab/lab-mlops-lifecycle/dinhdanhnam/scripts/Start-LocalMlflow.ps1
-w3/lab/lab-mlops-lifecycle/dinhdanhnam/scripts/Run-Pipeline.ps1
+w3/labs/lab-mlops-lifecycle/dinhdanhnam/scripts/Start-Stack.ps1
+w3/labs/lab-mlops-lifecycle/dinhdanhnam/scripts/Stop-Stack.ps1
+w3/labs/lab-mlops-lifecycle/dinhdanhnam/scripts/Start-LocalMlflow.ps1
+w3/labs/lab-mlops-lifecycle/dinhdanhnam/scripts/Run-Pipeline.ps1
 ```
 
 `Start-Stack.ps1` starts Docker Compose. It uses MLflow host port `5050` by default because Windows often reserves port `5000`.
@@ -174,7 +174,7 @@ w3/lab/lab-mlops-lifecycle/dinhdanhnam/scripts/Run-Pipeline.ps1
 ### Step 1: Install Python deps
 
 ```powershell
-python -m pip install -r w3/lab/lab-mlops-lifecycle/dinhdanhnam/requirements.txt
+python -m pip install -r w3/labs/lab-mlops-lifecycle/dinhdanhnam/requirements.txt
 ```
 
 ### Step 2A: Docker path
@@ -182,7 +182,7 @@ python -m pip install -r w3/lab/lab-mlops-lifecycle/dinhdanhnam/requirements.txt
 Try this first:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File w3/lab/lab-mlops-lifecycle/dinhdanhnam/scripts/Start-Stack.ps1 -MlflowPort 5050
+powershell -NoProfile -ExecutionPolicy Bypass -File w3/labs/lab-mlops-lifecycle/dinhdanhnam/scripts/Start-Stack.ps1 -MlflowPort 5050
 $env:MLFLOW_TRACKING_URI="http://localhost:5050"
 ```
 
@@ -193,7 +193,7 @@ On this machine, Docker failed while pulling the MLflow image from GHCR with a T
 Open a terminal and keep it running:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File w3/lab/lab-mlops-lifecycle/dinhdanhnam/scripts/Start-LocalMlflow.ps1 -Port 5052
+powershell -NoProfile -ExecutionPolicy Bypass -File w3/labs/lab-mlops-lifecycle/dinhdanhnam/scripts/Start-LocalMlflow.ps1 -Port 5052
 ```
 
 In a second terminal:
@@ -207,7 +207,7 @@ $env:AIOPS_EXPERIMENT_NAME="anomaly-detection-windows"
 ### Step 3: Train v1
 
 ```powershell
-cd w3/lab/lab-mlops-lifecycle/dinhdanhnam
+cd w3/labs/lab-mlops-lifecycle/dinhdanhnam
 python pipeline.py --data ..\data-pack\data\baseline.csv
 ```
 
@@ -222,7 +222,7 @@ Registered  : anomaly-detector v1 -> alias 'production'
 Open another terminal:
 
 ```powershell
-cd w3/lab/lab-mlops-lifecycle/dinhdanhnam
+cd w3/labs/lab-mlops-lifecycle/dinhdanhnam
 $env:MLFLOW_TRACKING_URI="http://localhost:5052"
 python serve.py --host 127.0.0.1 --port 8000
 ```
@@ -304,10 +304,10 @@ retrain.py registered v3 @staging, promoted it to @production, and completed 24 
 Read these deliverables first:
 
 ```text
-w3/lab/lab-closed-loop/dinhdanhnam/DESIGN.md
-w3/lab/lab-closed-loop/dinhdanhnam/SUBMIT.md
-w3/lab/lab-mlops-lifecycle/dinhdanhnam/DESIGN.md
-w3/lab/lab-mlops-lifecycle/dinhdanhnam/SUBMIT.md
+w3/labs/lab-closed-loop/dinhdanhnam/DESIGN.md
+w3/labs/lab-closed-loop/dinhdanhnam/SUBMIT.md
+w3/labs/lab-mlops-lifecycle/dinhdanhnam/DESIGN.md
+w3/labs/lab-mlops-lifecycle/dinhdanhnam/SUBMIT.md
 ```
 
 Focus on the design choices:
